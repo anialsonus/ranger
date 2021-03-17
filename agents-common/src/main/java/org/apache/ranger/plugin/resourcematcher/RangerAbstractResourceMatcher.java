@@ -166,6 +166,7 @@ public abstract class RangerAbstractResourceMatcher implements RangerResourceMat
 	public static String getOptionDelimiterPrefix(Map<String, String> options) {
 		return ServiceDefUtil.getOption(options, OPTION_TOKEN_DELIMITER_PREFIX, "");
 	}
+
 	protected ResourceMatcherWrapper buildResourceMatchers() {
 		List<ResourceMatcher> resourceMatchers = new ArrayList<>();
 		boolean needsDynamicEval = false;

@@ -52,8 +52,8 @@ public class CustomSSLSocketFactory extends SSLSocketFactory{
     	String keyStoreFilepwd = config.getSSLKeyStorePathPassword();
     	String trustStoreFile = config.getSSLTrustStorePath();
     	String trustStoreFilepwd = config.getSSLTrustStorePathPassword();
-    	String keyStoreType = KeyStore.getDefaultType();
-    	String trustStoreType = KeyStore.getDefaultType();
+    	String keyStoreType = config.getSSLKeyStoreType();
+    	String trustStoreType = config.getSSLTrustStoreType();
     	try {
 
 			KeyManager[] kmList = null;
@@ -104,7 +104,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory{
 				}
 			}
 
-			sslContext = SSLContext.getInstance("TLS");
+			sslContext = SSLContext.getInstance("TLSv1.2");
 
 			sslContext.init(kmList, tmList, new SecureRandom());
 			sockFactory = sslContext.getSocketFactory();

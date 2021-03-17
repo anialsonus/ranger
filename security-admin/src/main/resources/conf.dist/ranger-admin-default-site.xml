@@ -288,7 +288,7 @@
 
 	<property>
 		<name>ranger.service.https.attrib.ssl.protocol</name>
-		<value>TLS</value>
+		<value>TLSv1.2</value>
 	</property>
 
 	<property>
@@ -555,6 +555,18 @@
 		<value>2-way</value>
 	</property>
 	<property>
+		<name>ranger.db.ssl.certificateFile</name>
+		<value></value>
+	</property>
+	<property>
+		<name>ranger.truststore.file.type</name>
+		<value>jks</value>
+	</property>
+	<property>
+		<name>ranger.keystore.file.type</name>
+		<value>jks</value>
+	</property>
+	<property>
 		<name>ranger.keystore.file</name>
 		<value></value>
 	</property>
@@ -580,7 +592,7 @@
 	</property>
         <property>
                 <name>ranger.service.https.attrib.ssl.enabled.protocols</name>
-                <value>SSLv2Hello, TLSv1, TLSv1.1, TLSv1.2</value>
+                <value>TLSv1.2</value>
         </property>
         <!-- Encryption -->
        <property>

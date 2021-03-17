@@ -19,6 +19,7 @@
 
 package org.apache.ranger.authorization.hive.authorizer;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -302,70 +303,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		return ret;
 	}
 
-	private void initUserRoles() {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(" ==> RangerHiveAuthorizer.initUserRoles()");
-		}
-		// from SQLStdHiveAccessController.initUserRoles()
-		// to aid in testing through .q files, authenticator is passed as argument to
-		// the interface. this helps in being able to switch the user within a session.
-		// so we need to check if the user has changed
-		String newUserName = getHiveAuthenticator().getUserName();
-		if (Objects.equals(currentUserName, newUserName)) {
-			// no need to (re-)initialize the currentUserName, currentRoles fields
-			return;
-		}
-		this.currentUserName = newUserName;
-		try {
-			currentRoles = getCurrentRoleNamesFromRanger();
-		} catch (HiveAuthzPluginException e) {
-			LOG.error("Error while fetching roles from ranger for user : " + currentUserName, e);
-		}
-		LOG.info("Current user : " + currentUserName + ", Current Roles : " + currentRoles);
-	}
-
-	private Set<String> getCurrentRoles() {
-		// from SQLStdHiveAccessController.getCurrentRoles()
-		initUserRoles();
-		return currentRoles;
-	}
-
-	private Set<String> getCurrentRoleNamesFromRanger() throws HiveAuthzPluginException {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("RangerHiveAuthorizer.getCurrentRoleNamesFromRanger()");
-		}
-		UserGroupInformation ugi = getCurrentUserGroupInfo();
-
-		if (ugi == null) {
-			throw new HiveAuthzPluginException("User information not available");
-		}
-		Set<String> ret = new HashSet<String>();
-		String user = ugi.getShortUserName();
-
-		RangerHiveAuditHandler auditHandler = new RangerHiveAuditHandler();
-		try {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("<== getCurrentRoleNamesFromRanger() for user " + user);
-			}
-			Set<String> userRoles = new HashSet<String>(hivePlugin.getUserRoles(user, auditHandler));
-			for (String role : userRoles) {
-				if (!ROLE_ADMIN.equalsIgnoreCase(role)) {
-					ret.add(role);
-				} else {
-					this.adminRole = role;
-				}
-			}
-		} catch (Exception excp) {
-			throw new HiveAuthzPluginException(excp);
-		} finally {
-			auditHandler.flushAudit();
-		}
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("<== RangerHiveAuthorizer.getCurrentRoleNamesFromRanger() for user " + user);
-		}
-		return ret;
-	}
-
 	@Override
 	public void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException {
 		// from SQLStdHiveAccessController.setCurrentRole()
@@ -414,6 +351,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		List<String> ret = null;
 
 		String currentUserName = ugi.getShortUserName();
+		Set<String> groups     = Sets.newHashSet(ugi.getGroupNames());
 		List<String> userNames = Arrays.asList(currentUserName);
 
 		try {
@@ -421,8 +359,11 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 				LOG.debug("<== getAllRoles()");
 			}
 
-			ret = hivePlugin.getAllRoles(ugi.getShortUserName(), auditHandler);
-			result = true;
+			if ( hivePlugin != null) {
+				Set<String> roles = hivePlugin.getRolesFromUserAndGroups(currentUserName, groups);
+				ret = new ArrayList<>(roles);
+				result = true;
+			}
 
 		} catch(Exception excp) {
 			throw new HiveAuthzPluginException(excp);
@@ -802,17 +743,46 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 						continue;
 					}
 
-					String 	path         		= hiveObj.getObjectName();
+          String pathStr = hiveObj.getObjectName();
 					HiveObjectType hiveObjType  = resource.getObjectType();
 
-					if(hiveObjType == HiveObjectType.URI && isPathInFSScheme(path)) {
-						FsAction permission = getURIAccessType(hiveOpType);
+          if (hiveObjType == HiveObjectType.URI && isPathInFSScheme(pathStr)) {
 
-						if(!isURIAccessAllowed(user, permission, path, getHiveConf())) {
-							throw new HiveAccessControlException(String.format("Permission denied: user [%s] does not have [%s] privilege on [%s]", user, permission.name(), path));
-						}
+            FsAction permission = getURIAccessType(hiveOpType);
+            Path path = new Path(pathStr);
+            FileSystem fs = null;
 
-						continue;
+            try {
+              fs = FileSystem.get(path.toUri(), getHiveConf());
+            } catch (IOException e) {
+              LOG.error("Error getting permissions for " + path, e);
+              throw new HiveAccessControlException(
+                  String.format("Permission denied: user [%s] does not have [%s] privilege on [%s]", user,
+                      permission.name(), path),
+                  e);
+            }
+
+            boolean shouldCheckAccess = true;
+
+            if (isMountedFs(fs)) {
+              Path resolvedPath = resolvePath(path, fs);
+              if (resolvedPath != null) {
+                // we know the resolved path scheme. Let's check the resolved path
+                // scheme is part of hivePlugin.getFSScheme.
+                shouldCheckAccess = isPathInFSScheme(resolvedPath.toUri().toString());
+              }
+            }
+
+            if (shouldCheckAccess) {
+              if (!isURIAccessAllowed(user, permission, path, fs)) {
+                throw new HiveAccessControlException(
+                    String.format("Permission denied: user [%s] does not have [%s] privilege on [%s]", user,
+                        permission.name(), path));
+              }
+              continue;
+            }
+            // This means we got resolved path scheme is not part of
+            // hivePlugin.getFSScheme
 					}
 
 					HiveAccessType accessType = getAccessType(hiveObj, hiveOpType, hiveObjType, true);
@@ -863,17 +833,46 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 						continue;
 					}
 
-					String   path       = hiveObj.getObjectName();
+          String pathStr = hiveObj.getObjectName();
 					HiveObjectType hiveObjType  = resource.getObjectType();
 
-					if(hiveObjType == HiveObjectType.URI  && isPathInFSScheme(path)) {
-						FsAction permission = getURIAccessType(hiveOpType);
+          if (hiveObjType == HiveObjectType.URI && isPathInFSScheme(pathStr)) {
 
-		                if(!isURIAccessAllowed(user, permission, path, getHiveConf())) {
-		    				throw new HiveAccessControlException(String.format("Permission denied: user [%s] does not have [%s] privilege on [%s]", user, permission.name(), path));
-		                }
+            FsAction permission = getURIAccessType(hiveOpType);
+            Path path = new Path(pathStr);
+            FileSystem fs = null;
 
-						continue;
+            try {
+              fs = FileSystem.get(path.toUri(), getHiveConf());
+            } catch (IOException e) {
+              LOG.error("Error getting permissions for " + path, e);
+              throw new HiveAccessControlException(
+                  String.format("Permission denied: user [%s] does not have [%s] privilege on [%s]", user,
+                      permission.name(), path),
+                  e);
+            }
+
+            boolean shouldCheckAccess = true;
+
+            if (isMountedFs(fs)) {
+              Path resolvedPath = resolvePath(path, fs);
+              if (resolvedPath != null) {
+                // we know the resolved path scheme. Let's check the resolved path
+                // scheme is part of hivePlugin.getFSScheme.
+                shouldCheckAccess = isPathInFSScheme(resolvedPath.toUri().toString());
+              }
+            }
+
+            if (shouldCheckAccess) {
+              if (!isURIAccessAllowed(user, permission, path, fs)) {
+                throw new HiveAccessControlException(
+                    String.format("Permission denied: user [%s] does not have [%s] privilege on [%s]", user,
+                        permission.name(), path));
+              }
+              continue;
+            }
+            // This means we got resolved path scheme is not part of
+            // hivePlugin.getFSScheme
 					}
 
 					HiveAccessType accessType = getAccessType(hiveObj, hiveOpType, hiveObjType, false);
@@ -1062,7 +1061,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			Set<String> groups = Sets.newHashSet(ugi.getGroupNames());
 			Set<String> roles  = getCurrentRoles();
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("filterListCmdObjects: user[%s], groups%s", user, groups));
+				LOG.debug(String.format("filterListCmdObjects: user[%s], groups[%s], roles[%s] ", user, groups, roles));
 			}
 			
 			if (ret == null) { // if we got any items to filter then we can't return back a null.  We must return back a list even if its empty.
@@ -1835,6 +1834,9 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case CREATEDATABASE:
 			case CREATETABLE:
 			case CREATETABLE_AS_SELECT:
+			case CREATEFUNCTION:
+			case DROPFUNCTION:
+			case RELOADFUNCTION:
 			case ALTERDATABASE:
 			case ALTERDATABASE_LOCATION:
 			case ALTERDATABASE_OWNER:
@@ -1876,6 +1878,8 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case ALTERPARTITION_MERGEFILES:
 			case ALTERTBLPART_SKEWED_LOCATION:
 			case ALTERTABLE_OWNER:
+			case ADD:
+			case DELETE:
 			case QUERY:
 				ret = FsAction.ALL;
 				break;
@@ -1904,9 +1908,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case SHOWPARTITIONS:
 			case SHOWLOCKS:
 			case SHOWCONF:
-			case CREATEFUNCTION:
-			case DROPFUNCTION:
-			case RELOADFUNCTION:
 			case CREATEMACRO:
 			case DROPMACRO:
 			case CREATEVIEW:
@@ -1940,8 +1941,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case SET:
 			case RESET:
 			case DFS:
-			case ADD:
-			case DELETE:
 			case COMPILE:
 			case START_TRANSACTION:
 			case COMMIT:
@@ -2001,15 +2000,13 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		return ret;
 	}
 
-    private boolean isURIAccessAllowed(String userName, FsAction action, String uri, HiveConf conf) {
+  private boolean isURIAccessAllowed(String userName, FsAction action, Path filePath, FileSystem fs) {
         boolean ret = false;
 
         if(action == FsAction.NONE) {
             ret = true;
         } else {
             try {
-                Path       filePath   = new Path(uri);
-                FileSystem fs         = FileSystem.get(filePath.toUri(), conf);
                 FileStatus[] filestat = fs.globStatus(filePath);
 
                 if(filestat != null && filestat.length > 0) {
@@ -2033,7 +2030,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
                 }
             } catch(Exception excp) {
 				ret = false;
-                LOG.error("Error getting permissions for " + uri, excp);
+                LOG.error("Error getting permissions for " + filePath, excp);
             }
         }
 
@@ -2055,6 +2052,30 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		}
 		return ret;
 	}
+
+  /**
+   * Resolves the path to actual target fs path. In the mount based file systems
+   * like ViewHDFS, the resolved target path could be the path of other mounted
+   * target fs path. Returns null if file does not exist or any other IOException.
+   */
+  private Path resolvePath(Path path, FileSystem fs) {
+    try {
+      return fs.resolvePath(path);
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if the given fs supports mount functionality. In general we can
+   * have child file systems only in the case of mount fs like ViewFileSystem,
+   * ViewFsOverloadScheme or ViewDistributedFileSystem. Returns false if the
+   * getChildFileSystems API returns null.
+   */
+  private boolean isMountedFs(FileSystem fs) {
+    return fs.getChildFileSystems() != null;
+  }
+
 
 
 	private void handleDfsCommand(HiveOperationType         hiveOpType,
@@ -2259,6 +2280,54 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerHiveAuthorizer.showPrivileges() Result: " + ret);
+		}
+
+		return ret;
+	}
+
+	@Override
+	public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
+			throws HiveAuthzPluginException, HiveAccessControlException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("==> RangerHiveAuthorizer.getRoleGrantInfoForPrincipal ==>  principal: " +  principal);
+		}
+		boolean result = false;
+		RangerHiveAuditHandler auditHandler = new RangerHiveAuditHandler();
+		UserGroupInformation ugi = getCurrentUserGroupInfo();
+
+		if(ugi == null) {
+			throw new HiveAccessControlException("Permission denied: user information not available");
+		}
+
+		List<HiveRoleGrant> ret = new ArrayList<>();
+		String currentUserName = ugi.getShortUserName();
+		List<String> userNames = Arrays.asList(currentUserName);
+
+		try {
+			List<String> roleStringList = hivePlugin.getUserRoles(principal.getName(), auditHandler);
+
+			for (String roleName : roleStringList) {
+				RangerRole role = hivePlugin.getRole(ugi.getShortUserName(), roleName, auditHandler);
+				HiveRoleGrant hiveRoleGrant = new HiveRoleGrant();
+				hiveRoleGrant.setGrantOption(true);
+				hiveRoleGrant.setGrantor(role.getCreatedBy());
+				hiveRoleGrant.setGrantorType(HivePrincipal.HivePrincipalType.USER.name());
+				hiveRoleGrant.setGrantTime((int) (role.getUpdateTime().getTime()/1000));
+				hiveRoleGrant.setRoleName(roleName);
+				ret.add(hiveRoleGrant);
+			}
+			result = true;
+		} catch (Exception e) {
+			LOG.error("RangerHiveAuthorizer.getRoleGrantInfoForPrincipal() error", e);
+			throw new HiveAuthzPluginException("RangerHiveAuthorizer.getRoleGrantInfoForPrincipal() error: " + e.getMessage(), e);
+		} finally {
+			RangerAccessResult accessResult = createAuditEvent(hivePlugin, currentUserName, userNames, HiveOperationType.SHOW_ROLE_GRANT, HiveAccessType.SELECT, null, result);
+			auditHandler.processResult(accessResult);
+			auditHandler.flushAudit();
+		}
+
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("<== RangerHiveAuthorizer.getRoleGrantInfoForPrincipal() Result: " + ret);
 		}
 
 		return ret;
@@ -2831,6 +2900,93 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		}
 		return ret;
 	}
+
+	private Set<String> getCurrentRoles() {
+		// from SQLStdHiveAccessController.getCurrentRoles()
+		initUserRoles();
+		return currentRoles;
+	}
+
+	private void initUserRoles() {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(" ==> RangerHiveAuthorizer.initUserRoles()");
+		}
+		// from SQLStdHiveAccessController.initUserRoles()
+		// to aid in testing through .q files, authenticator is passed as argument to
+		// the interface. this helps in being able to switch the user within a session.
+		// so we need to check if the user has changed
+		String newUserName = getHiveAuthenticator().getUserName();
+		if (Objects.equals(currentUserName, newUserName)) {
+			// no need to (re-)initialize the currentUserName, currentRoles fields
+			return;
+		}
+		this.currentUserName = newUserName;
+		try {
+			currentRoles = getCurrentRoleNamesFromRanger();
+		} catch (HiveAuthzPluginException e) {
+			LOG.error("Error while fetching roles from ranger for user : " + currentUserName, e);
+		}
+		LOG.info("Current user : " + currentUserName + ", Current Roles : " + currentRoles);
+	}
+
+	private Set<String> getCurrentRoleNamesFromRanger() throws HiveAuthzPluginException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("RangerHiveAuthorizer.getCurrentRoleNamesFromRanger()");
+		}
+		boolean result = false;
+		UserGroupInformation ugi = getCurrentUserGroupInfo();
+
+		if (ugi == null) {
+			throw new HiveAuthzPluginException("User information not available");
+		}
+		Set<String> ret = new HashSet<String>();
+		String user = ugi.getShortUserName();
+		Set<String> groups = Sets.newHashSet(ugi.getGroupNames());
+
+		RangerHiveAuditHandler auditHandler = new RangerHiveAuditHandler();
+		try {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("<== getCurrentRoleNamesFromRanger() for user " + user +", userGroups: " + groups);
+			}
+			Set<String> userRoles = new HashSet<String>(getRolesforUserAndGroups(user, groups));
+			for (String role : userRoles) {
+				if (!ROLE_ADMIN.equalsIgnoreCase(role)) {
+					ret.add(role);
+				} else {
+					this.adminRole = role;
+				}
+			}
+			result = true;
+		} catch (Exception excp) {
+			throw new HiveAuthzPluginException(excp);
+		} finally {
+			List<String> roleNames = new ArrayList<>(ret);
+			RangerAccessResult accessResult = createAuditEvent(hivePlugin, currentUserName, roleNames, HiveOperationType.SHOW_ROLES, HiveAccessType.SELECT, null, result);
+			auditHandler.processResult(accessResult);
+			auditHandler.flushAudit();
+		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("<== RangerHiveAuthorizer.getCurrentRoleNamesFromRanger() for user: " + user + ", roleNames: " + ret);
+		}
+		return ret;
+	}
+
+	private Set<String> getRolesforUserAndGroups(String user, Set<String> groups) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("==> RangerHiveAuthorizer.getRolesforUserAndGroups()");
+		}
+
+		Set<String> ret = null;
+		if (hivePlugin != null) {
+			ret = hivePlugin.getRolesFromUserAndGroups(user, groups);
+		}
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("<== RangerHiveAuthorizer.getRolesforUserAndGroups(), user: " + user + ", groups: " + groups + ", roles: " + ret);
+		}
+
+		return ret != null ? ret : Collections.emptySet();
+	}
 }
 
 enum HiveObjectType { NONE, DATABASE, TABLE, VIEW, PARTITION, INDEX, COLUMN, FUNCTION, URI, SERVICE_NAME, GLOBAL };
@@ -2877,6 +3033,8 @@ class HiveObj {
 		ret = dbName.split("\\.");
 		return ret;
 	}
+
+
 }
 
 class RangerHivePlugin extends RangerBasePlugin {

@@ -19,7 +19,6 @@
   <id>admin</id> 
   <formats>
      <format>tar.gz</format>
-     <format>zip</format>
   </formats>
   <baseDirectory>${project.parent.name}-${project.version}-admin</baseDirectory>
   <includeBaseDirectory>true</includeBaseDirectory>
@@ -191,8 +190,6 @@
           <include>io.opentracing:opentracing-util:jar:0.31.0</include>
           <include>io.opentracing.contrib:opentracing-tracerresolver:jar:0.1.5</include>
           <include>com.google.protobuf:protobuf-java</include>
-          <include>org.apache.ratis:ratis-common:jar:0.2.0</include>
-          <include>org.apache.ratis:ratis-thirdparty-misc:jar:0.2.0</include>
         </includes>
       </binaries>
     </moduleSet>
@@ -240,17 +237,17 @@
           <include>commons-collections:commons-collections</include>
           <include>commons-lang:commons-lang</include>
           <include>commons-io:commons-io</include>
-          <include>org.apache.solr:solr-solrj</include>
-          <include>org.apache.httpcomponents:httpclient</include>
-          <include>org.apache.httpcomponents:httpcore</include>
-          <include>org.noggit:noggit</include>
+          <include>org.apache.solr:solr-solrj:jar:${solr.version}</include>
+          <include>org.apache.httpcomponents:httpclient:jar:${httpcomponents.httpclient.version}</include>
+          <include>org.apache.httpcomponents:httpcore:jar:${httpcomponents.httpcore.version}</include>
           <include>org.apache.zookeeper:zookeeper:jar:${zookeeper.version}</include>
-          <include>org.apache.httpcomponents:httpmime</include>
+          <include>org.apache.httpcomponents:httpmime:jar:${httpcomponents.httpmime.version}</include>
           <include>commons-codec:commons-codec</include>
           <include>org.apache.htrace:htrace-core4:jar:${htrace-core.version}</include>
           <include>com.fasterxml.woodstox:woodstox-core:jar:${fasterxml.woodstox.version}</include>
           <include>org.codehaus.woodstox:stax2-api:jar:${codehaus.woodstox.stax2api.version}</include>
           <include>org.apache.commons:commons-configuration2:jar:${commons.configuration.version}</include>
+          <include>org.apache.commons:commons-lang3:jar:${commons.lang3.version}</include>
           <include>com.kstruct:gethostname4j:jar:${kstruct.gethostname4j.version}</include>
           <include>net.java.dev.jna:jna:jar:${jna.version}</include>
           <include>net.java.dev.jna:jna-platform:jar:${jna-platform.version}</include>
@@ -262,7 +259,7 @@
           <include>org.elasticsearch:elasticsearch</include>
           <include>org.elasticsearch.plugin:lang-mustache-client</include>
           <include>org.elasticsearch.plugin:rank-eval-client</include>
-          <include>org.apache.httpcomponents:httpasyncclient</include>
+          <include>org.apache.httpcomponents:httpasyncclient:jar:${httpcomponents.httpasyncclient.version}</include>
           <include>org.apache.httpcomponents:httpcore-nio</include>
           <include>com.fasterxml.jackson.core:jackson-core</include>
           <include>org.apache.logging.log4j:log4j-core</include>
@@ -271,6 +268,9 @@
           <include>com.carrotsearch:hppc</include>
           <include>joda-time:joda-time</include>
           <include>org.apache.ranger:ranger-plugins-cred</include>
+          <include>org.apache.ranger:ugsyn-util</include>
+          <include>org.eclipse.jetty:jetty-client:jar:${jetty-client.version}</include>
+          <include>org.apache.commons:commons-compress:jar:${commons.compress.version}</include>
         </includes>
       </binaries>
     </moduleSet>
@@ -292,16 +292,17 @@
           <include>commons-configuration:commons-configuration</include>
           <include>commons-io:commons-io:jar:${commons.io.version}</include>
           <include>commons-lang:commons-lang</include>
-          <include>commons-lang3:commons-lang3</include>
           <include>commons-logging:commons-logging</include>
           <include>com.google.guava:guava</include>
           <include>org.slf4j:slf4j-api</include>
+          <include>org.apache.commons:commons-lang3</include>
           <include>org.apache.hadoop:hadoop-common</include>
           <include>org.apache.hadoop:hadoop-auth</include>
           <include>org.apache.htrace:htrace-core4:jar:${htrace-core.version}</include>
           <include>com.fasterxml.woodstox:woodstox-core:jar:${fasterxml.woodstox.version}</include>
           <include>org.codehaus.woodstox:stax2-api:jar:${codehaus.woodstox.stax2api.version}</include>
           <include>org.apache.commons:commons-configuration2:jar:${commons.configuration.version}</include>
+          <include>org.apache.commons:commons-compress:jar:${commons.compress.version}</include>
         </includes>
       </binaries>
     </moduleSet>

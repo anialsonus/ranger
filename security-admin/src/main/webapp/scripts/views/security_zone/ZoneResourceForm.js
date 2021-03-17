@@ -107,12 +107,13 @@ define(function(require) {
                     _.each(this.model.get('resources'), function(obj, key) {
                         var resourceDef = _.findWhere(resourceDefList, {
                                 'name': key
-                            }),
-                            sameLevelResourceDef = [],
-                            parentResource;
-                        sameLevelResourceDef = _.where(resourceDefList, {
-                            'level': resourceDef.level,
-                            'parent': resourceDef.parent
+                        }),
+                        sameLevelResourceDef = [],
+                        parentResource;
+                        sameLevelResourceDef = _.filter(resourceDefList, function(objRsc){
+                            if (objRsc.level === resourceDef.level && objRsc.parent === resourceDef.parent) {
+                                return objRsc
+                            }
                         });
                         //for parent leftnode status
                         if (resourceDef.parent) {
@@ -158,7 +159,7 @@ define(function(require) {
                     });
                 }
                 //hide form fields if it's parent is hidden
-                var resources = formDiv.find('.control-group');
+                var resources = formDiv.find('.form-group');
                 _.each(resources, function(rsrc, key) {
                     var parent = $(rsrc).attr('parent');
                     var label = $(rsrc).find('label').html();

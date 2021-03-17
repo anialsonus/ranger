@@ -75,6 +75,12 @@ public class SolrAccessAuditsService extends AccessAuditsService {
 		List<VXAccessAudit> xAccessAuditList = new ArrayList<VXAccessAudit>();
 
 		Map<String, Object> paramList = searchCriteria.getParamList();
+
+		Object eventIdObj = paramList.get("eventId");
+		if (eventIdObj != null) {
+			paramList.put("id", eventIdObj.toString());
+		}
+
 		updateUserExclusion(paramList);
 
 		QueryResponse response = solrUtil.searchResources(searchCriteria,
@@ -127,6 +133,7 @@ public class SolrAccessAuditsService extends AccessAuditsService {
 		if (value != null) {
 			// TODO: Converting ID to hashcode for now
 			accessAudit.setId((long) value.hashCode());
+			accessAudit.setEventId(value.toString());
 		}
 		
 		value = doc.getFieldValue("cluster");

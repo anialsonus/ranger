@@ -966,10 +966,10 @@ CREATE TABLE [dbo].[x_portal_user](
         [update_time] [datetime2] DEFAULT NULL NULL,
         [added_by_id] [bigint] DEFAULT NULL NULL,
         [upd_by_id] [bigint] DEFAULT NULL NULL,
-        [first_name] [varchar](256) DEFAULT NULL NULL,
-        [last_name] [varchar](256) DEFAULT NULL NULL,
+        [first_name] [nvarchar](256) DEFAULT NULL NULL,
+        [last_name] [nvarchar](256) DEFAULT NULL NULL,
         [pub_scr_name] [varchar](2048) DEFAULT NULL NULL,
-        [login_id] [varchar](767) DEFAULT NULL NULL,
+        [login_id] [nvarchar](767) DEFAULT NULL NULL,
         [password] [varchar](512) NOT NULL,
         [email] [varchar](512) DEFAULT NULL NULL,
         [status] [int] DEFAULT 0 NOT NULL,
@@ -1120,8 +1120,8 @@ CREATE TABLE [dbo].[x_group](
         [update_time] [datetime2] DEFAULT NULL NULL,
         [added_by_id] [bigint] DEFAULT NULL NULL,
         [upd_by_id] [bigint] DEFAULT NULL NULL,
-        [group_name] [varchar](767) NOT NULL,
-        [descr] [varchar](4000) NOT NULL,
+        [group_name] [nvarchar](767) NOT NULL,
+        [descr] [nvarchar](4000) NOT NULL,
         [status] [int] DEFAULT 0  NOT NULL,
         [group_type] [int] DEFAULT 0 NOT NULL,
         [cred_store_id] [bigint] DEFAULT NULL NULL,
@@ -1147,7 +1147,7 @@ CREATE TABLE [dbo].[x_group_groups](
         [update_time] [datetime2] DEFAULT NULL NULL,
         [added_by_id] [bigint] DEFAULT NULL NULL,
         [upd_by_id] [bigint] DEFAULT NULL NULL,
-        [group_name] [varchar](1024) NOT NULL,
+        [group_name] [nvarchar](1024) NOT NULL,
         [p_group_id] [bigint] DEFAULT NULL  NULL,
         [group_id] [bigint] DEFAULT NULL NULL,
 PRIMARY KEY CLUSTERED
@@ -1165,8 +1165,8 @@ CREATE TABLE [dbo].[x_user](
         [update_time] [datetime2] DEFAULT NULL NULL,
         [added_by_id] [bigint] DEFAULT NULL NULL,
         [upd_by_id] [bigint] DEFAULT NULL NULL,
-        [user_name] [varchar](767) NOT NULL,
-        [descr] [varchar](4000) NOT NULL,
+        [user_name] [nvarchar](767) NOT NULL,
+        [descr] [nvarchar](4000) NOT NULL,
         [status] [int] DEFAULT 0 NOT NULL,
         [cred_store_id] [bigint] DEFAULT NULL NULL,
         [is_visible] [int] DEFAULT 1 NOT NULL,
@@ -1190,7 +1190,7 @@ CREATE TABLE [dbo].[x_group_users](
         [update_time] [datetime2] DEFAULT NULL NULL,
         [added_by_id] [bigint] DEFAULT NULL NULL,
         [upd_by_id] [bigint] DEFAULT NULL NULL,
-        [group_name] [varchar](767) NOT NULL,
+        [group_name] [nvarchar](767) NOT NULL,
         [p_group_id] [bigint] DEFAULT NULL NULL,
         [user_id] [bigint] DEFAULT NULL NULL,
 PRIMARY KEY CLUSTERED
@@ -2128,13 +2128,13 @@ CREATE TABLE [dbo].[x_ugsync_audit_info](
         [added_by_id] [bigint] DEFAULT NULL NULL,
         [upd_by_id] [bigint] DEFAULT NULL NULL,
         [event_time] [datetime2] DEFAULT NULL NULL,
-        [user_name] [varchar](255) NOT  NULL,
+        [user_name] [nvarchar](255) NOT  NULL,
         [sync_source] [varchar](128) NOT NULL,
         [no_of_new_users] [bigint] NOT NULL,
         [no_of_new_groups] [bigint] NOT NULL,
         [no_of_modified_users] [bigint] NOT NULL,
         [no_of_modified_groups] [bigint] NOT NULL,
-        [sync_source_info] [varchar](4000) NOT NULL,
+        [sync_source_info] [nvarchar](max) NOT NULL,
         [session_id] [varchar](255) DEFAULT NULL NULL,
         PRIMARY KEY CLUSTERED
 (
@@ -2241,7 +2241,7 @@ CREATE TABLE [dbo].[x_policy_ref_user] (
   [upd_by_id] [bigint] DEFAULT NULL NULL,
   [policy_id] [bigint] NOT NULL,
   [user_id] [bigint] NOT NULL,
-  [user_name] [varchar](4000) DEFAULT NULL NULL,
+  [user_name] [nvarchar](4000) DEFAULT NULL NULL,
   PRIMARY KEY CLUSTERED
   (
   [id] ASC
@@ -2263,7 +2263,7 @@ CREATE TABLE [dbo].[x_policy_ref_group] (
   [upd_by_id] [bigint] DEFAULT NULL NULL,
   [policy_id] [bigint] NOT NULL,
   [group_id] [bigint] NOT NULL,
-  [group_name] [varchar](4000) DEFAULT NULL NULL,
+  [group_name] [nvarchar](4000) DEFAULT NULL NULL,
   PRIMARY KEY CLUSTERED
   (
   [id] ASC
@@ -2363,7 +2363,7 @@ CREATE TABLE [dbo].[x_security_zone_ref_user](
         [upd_by_id] [bigint] DEFAULT NULL NULL,
         [zone_id] [bigint] DEFAULT NULL NULL,
         [user_id] [bigint] DEFAULT NULL NULL,
-        [user_name] [varchar](767) DEFAULT NULL NULL,
+        [user_name] [nvarchar](767) DEFAULT NULL NULL,
         [user_type] [tinyint] DEFAULT NULL NULL,
         PRIMARY KEY CLUSTERED
 (
@@ -2392,7 +2392,7 @@ CREATE TABLE [dbo].[x_security_zone_ref_group](
         [upd_by_id] [bigint] DEFAULT NULL NULL,
         [zone_id] [bigint] DEFAULT NULL NULL,
         [group_id] [bigint] DEFAULT NULL NULL,
-        [group_name] [varchar](767) DEFAULT NULL NULL,
+        [group_name] [nvarchar](767) DEFAULT NULL NULL,
         [group_type] [tinyint] DEFAULT NULL NULL,
         PRIMARY KEY CLUSTERED
 (
@@ -2448,8 +2448,8 @@ CREATE TABLE [dbo].[x_role](
 [added_by_id] [bigint] DEFAULT NULL NULL,
 [upd_by_id] [bigint] DEFAULT NULL NULL,
 [version] [bigint] DEFAULT NULL NULL,
-[name] [varchar](255) NOT NULL,
-[description] [varchar](1024) DEFAULT NULL NULL,
+[name] [nvarchar](255) NOT NULL,
+[description] [nvarchar](1024) DEFAULT NULL NULL,
 [role_options] [varchar](4000) DEFAULT NULL NULL,
 [role_text] [nvarchar](max) DEFAULT NULL NULL,
   PRIMARY KEY CLUSTERED
@@ -2479,7 +2479,7 @@ CREATE TABLE [dbo].[x_role_ref_user](
 [upd_by_id] [bigint] DEFAULT NULL NULL,
 [role_id] [bigint] NOT NULL,
 [user_id] [bigint] DEFAULT NULL NULL,
-[user_name] [varchar](767) DEFAULT NULL NULL,
+[user_name] [nvarchar](767) DEFAULT NULL NULL,
 [priv_type] [int] DEFAULT NULL NULL,
   PRIMARY KEY CLUSTERED
 (
@@ -2507,7 +2507,7 @@ CREATE TABLE [dbo].[x_role_ref_group](
 [upd_by_id] [bigint] DEFAULT NULL NULL,
 [role_id] [bigint] NOT NULL,
 [group_id] [bigint] DEFAULT NULL NULL,
-[group_name] [varchar](767) DEFAULT NULL NULL,
+[group_name] [nvarchar](767) DEFAULT NULL NULL,
 [priv_type] [int] DEFAULT NULL NULL,
  PRIMARY KEY CLUSTERED
 (
@@ -2535,7 +2535,7 @@ CREATE TABLE [dbo].[x_policy_ref_role](
 [upd_by_id] [bigint] DEFAULT NULL NULL,
 [policy_id] [bigint] NOT NULL,
 [role_id] [bigint] NOT NULL,
-[role_name] [varchar](255) DEFAULT NULL NULL,
+[role_name] [nvarchar](255) DEFAULT NULL NULL,
  PRIMARY KEY CLUSTERED
   (
   [id] ASC
@@ -2566,7 +2566,7 @@ CREATE TABLE [dbo].[x_role_ref_role](
 [upd_by_id] [bigint] DEFAULT NULL NULL,
 [role_ref_id] [bigint] DEFAULT NULL NULL,
 [role_id] [bigint] NOT NULL,
-[role_name] [varchar](255) DEFAULT NULL NULL,
+[role_name] [nvarchar](255) DEFAULT NULL NULL,
 [priv_type] [int] DEFAULT NULL NULL,
   PRIMARY KEY CLUSTERED
   (
@@ -3851,6 +3851,202 @@ GO
 PRINT 'Created function dbo.getXportalUIdByLoginId successfully'
 GO
 
+IF (OBJECT_ID('x_rms_service_res_FK_service_id') IS NOT NULL)
+BEGIN
+    ALTER TABLE [dbo].[x_rms_service_resource] DROP CONSTRAINT x_rms_service_res_FK_service_id
+END
+GO
+IF (OBJECT_ID('x_rms_notification_FK_hl_service_id') IS NOT NULL)
+BEGIN
+    ALTER TABLE [dbo].[x_rms_notification] DROP CONSTRAINT x_rms_notification_FK_hl_service_id
+END
+GO
+IF (OBJECT_ID('x_rms_notification_FK_ll_service_id') IS NOT NULL)
+BEGIN
+    ALTER TABLE [dbo].[x_rms_notification] DROP CONSTRAINT x_rms_notification_FK_ll_service_id
+END
+GO
+IF (OBJECT_ID('x_rms_res_map_FK_hl_res_id') IS NOT NULL)
+BEGIN
+    ALTER TABLE [dbo].[x_rms_resource_mapping] DROP CONSTRAINT x_rms_res_map_FK_hl_res_id
+END
+GO
+IF (OBJECT_ID('x_rms_res_map_FK_ll_res_id') IS NOT NULL)
+BEGIN
+    ALTER TABLE [dbo].[x_rms_resource_mapping] DROP CONSTRAINT x_rms_res_map_FK_ll_res_id
+END
+GO
+IF (OBJECT_ID('x_rms_notification') IS NOT NULL)
+BEGIN
+    DROP TABLE [dbo].[x_rms_notification]
+END
+GO
+IF (OBJECT_ID('x_rms_resource_mapping') IS NOT NULL)
+BEGIN
+    DROP TABLE [dbo].[x_rms_resource_mapping]
+END
+GO
+IF (OBJECT_ID('x_rms_mapping_provider') IS NOT NULL)
+BEGIN
+    DROP TABLE [dbo].[x_rms_mapping_provider]
+END
+GO
+IF (OBJECT_ID('x_rms_service_resource') IS NOT NULL)
+BEGIN
+    DROP TABLE [dbo].[x_rms_service_resource]
+END
+GO
+
+
+SET ANSI_NULLS ON
+SET QUOTED_IDENTIFIER ON
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[x_rms_service_resource](
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [guid] [varchar](64) NOT NULL,
+        [create_time] [datetime2] DEFAULT NULL NULL,
+        [update_time] [datetime2] DEFAULT NULL NULL,
+        [added_by_id] [bigint] DEFAULT NULL NULL,
+        [upd_by_id] [bigint] DEFAULT NULL NULL,
+        [version] [bigint] DEFAULT NULL NULL,
+        [service_id] [bigint] NOT NULL,
+        [resource_signature] [varchar](128) DEFAULT NULL NULL,
+        [is_enabled] [tinyint] DEFAULT 1 NOT NULL,
+        [service_resource_elements_text] [nvarchar](max) DEFAULT NULL NULL,
+        PRIMARY KEY CLUSTERED
+(
+        [id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+CONSTRAINT [x_rms_service_resource$x_service_res_UK_guid] UNIQUE NONCLUSTERED
+(
+        [guid] ASC
+)WITH (PAD_INDEX = OFF,STATISTICS_NORECOMPUTE = OFF,IGNORE_DUP_KEY = OFF,ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[x_rms_service_resource] WITH CHECK ADD CONSTRAINT [x_rms_service_res_FK_service_id] FOREIGN KEY([service_id]) REFERENCES [dbo].[x_service] ([id])
+GO
+CREATE NONCLUSTERED INDEX [x_rms_service_resource_IDX_service_id] ON [x_rms_service_resource]
+(
+   [service_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [x_rms_service_resource_IDX_resource_signature] ON [x_rms_service_resource]
+(
+   [resource_signature] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+
+
+SET ANSI_NULLS ON
+SET QUOTED_IDENTIFIER ON
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[x_rms_notification](
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [hms_name] [VARCHAR](128) NULL DEFAULT NULL,
+        [notification_id] [bigint] NULL DEFAULT NULL,
+        [change_timestamp] [datetime2] DEFAULT NULL NULL,
+        [change_type] [VARCHAR](64) NULL DEFAULT  NULL,
+        [hl_resource_id] [bigint] NULL DEFAULT NULL,
+        [hl_service_id] [bigint] NULL DEFAULT NULL,
+        [ll_resource_id] [bigint] NULL DEFAULT NULL,
+        [ll_service_id] [bigint] NULL DEFAULT NULL,
+
+PRIMARY KEY CLUSTERED
+(
+        [id] ASC
+)WITH (PAD_INDEX = OFF,STATISTICS_NORECOMPUTE = OFF,IGNORE_DUP_KEY = OFF,ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[x_rms_notification]  WITH CHECK ADD CONSTRAINT [x_rms_notification_FK_hl_service_id] FOREIGN KEY([hl_service_id])
+REFERENCES [dbo].[x_service] ([id])
+ALTER TABLE [dbo].[x_rms_notification]  WITH CHECK ADD CONSTRAINT [x_rms_notification_FK_ll_service_id] FOREIGN KEY([ll_service_id])
+REFERENCES [dbo].[x_service] ([id])
+GO
+CREATE NONCLUSTERED INDEX [x_rms_notification_IDX_notification_id] ON [x_rms_notification]
+(
+   [notification_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [x_rms_notification_IDX_hms_name_notification_id] ON [x_rms_notification]
+(
+   [hms_name] ASC,[notification_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [x_rms_notification_IDX_hl_service_id] ON [x_rms_notification]
+(
+   [hl_service_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [x_rms_notification_IDX_ll_service_id] ON [x_rms_notification]
+(
+   [ll_service_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+
+SET ANSI_NULLS ON
+SET QUOTED_IDENTIFIER ON
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[x_rms_resource_mapping](
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [change_timestamp] [datetime2] DEFAULT NULL NULL,
+        [hl_resource_id] [bigint] NOT NULL,
+        [ll_resource_id] [bigint] NOT NULL,
+PRIMARY KEY CLUSTERED
+(
+        [id] ASC
+)WITH (PAD_INDEX = OFF,STATISTICS_NORECOMPUTE = OFF,IGNORE_DUP_KEY = OFF,ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [x_rms_res_map_UK_hl_res_id_ll_res_id] UNIQUE NONCLUSTERED
+(
+        [hl_resource_id] ASC, [ll_resource_id] ASC
+)WITH (PAD_INDEX = OFF,STATISTICS_NORECOMPUTE = OFF,IGNORE_DUP_KEY = OFF,ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[x_rms_resource_mapping]  WITH CHECK ADD CONSTRAINT [x_rms_res_map_FK_hl_res_id] FOREIGN KEY([hl_resource_id])
+REFERENCES [dbo].[x_rms_service_resource] ([id])
+ALTER TABLE [dbo].[x_rms_resource_mapping]  WITH CHECK ADD CONSTRAINT [x_rms_res_map_FK_ll_res_id] FOREIGN KEY([ll_resource_id])
+REFERENCES [dbo].[x_rms_service_resource] ([id])
+GO
+CREATE NONCLUSTERED INDEX [x_rms_resource_mapping_IDX_hl_resource_id] ON [x_rms_resource_mapping]
+(
+   [hl_resource_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [x_rms_resource_mapping_IDX_ll_resource_id] ON [x_rms_resource_mapping]
+(
+   [ll_resource_id] ASC
+)
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+
+SET ANSI_NULLS ON
+SET QUOTED_IDENTIFIER ON
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[x_rms_mapping_provider](
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [change_timestamp] [datetime2] DEFAULT NULL NULL,
+        [name] [VARCHAR](128) NOT NULL,
+        [last_known_version] [bigint] NOT NULL,
+PRIMARY KEY CLUSTERED
+(
+        [id] ASC
+)WITH (PAD_INDEX = OFF,STATISTICS_NORECOMPUTE = OFF,IGNORE_DUP_KEY = OFF,ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [x_rms_mapping_provider_UK_name] UNIQUE NONCLUSTERED
+(
+        [name] ASC
+)WITH (PAD_INDEX = OFF,STATISTICS_NORECOMPUTE = OFF,IGNORE_DUP_KEY = OFF,ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
 insert into x_portal_user (CREATE_TIME,UPDATE_TIME,FIRST_NAME,LAST_NAME,PUB_SCR_NAME,LOGIN_ID,PASSWORD,EMAIL,STATUS) values (CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'Admin','','Admin','admin','ceb4f32325eda6142bd65215f4c0f371','',1);
 insert into x_portal_user_role (CREATE_TIME,UPDATE_TIME,USER_ID,USER_ROLE,STATUS) values (CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,dbo.getXportalUIdByLoginId('admin'),'ROLE_SYS_ADMIN',1);
 insert into x_user (CREATE_TIME,UPDATE_TIME,user_name,status,descr) values (CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'admin',0,'Administrator');
@@ -3904,6 +4100,10 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('045',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('046',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('047',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('048',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('049',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('050',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('051',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('DB_PATCHES',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_user_module_perm (user_id,module_id,create_time,update_time,added_by_id,upd_by_id,is_allowed) VALUES (dbo.getXportalUIdByLoginId('admin'),dbo.getModulesIdByName('Reports'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,dbo.getXportalUIdByLoginId('admin'),dbo.getXportalUIdByLoginId('admin'),1);
 INSERT INTO x_user_module_perm (user_id,module_id,create_time,update_time,added_by_id,upd_by_id,is_allowed) VALUES (dbo.getXportalUIdByLoginId('admin'),dbo.getModulesIdByName('Resource Based Policies'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,dbo.getXportalUIdByLoginId('admin'),dbo.getXportalUIdByLoginId('admin'),1);
@@ -3963,6 +4163,12 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10036',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10037',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10038',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10040',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10041',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10043',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10044',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10045',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10046',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('JAVA_PATCHES',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
 CREATE VIEW [dbo].[vx_trx_log] AS

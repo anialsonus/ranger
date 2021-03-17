@@ -280,6 +280,9 @@ public class RoleREST {
             if (ret == null) {
                 throw restErrorUtil.createRESTException("User doesn't have permissions to get details for " + roleName);
             }
+            if (ret.getName() == null) {
+                throw restErrorUtil.createRESTException("Role with name: " + roleName + " does not exist");
+            }
 
         } catch(WebApplicationException excp) {
             throw excp;
@@ -316,7 +319,7 @@ public class RoleREST {
         return ret;
     }
 
-    /* This operation is allowed only when effective User has ranger admin privilege
+    /* This operation is allowed only when effective User has ranger admin or auditor privilege
      * if execUser is not same as logged-in user then effective user is execUser
      * else  effective user is logged-in user.
      * This logic is implemented as part of ensureAdminAccess(String serviceName, String userName);
@@ -331,8 +334,30 @@ public class RoleREST {
         }
         SearchFilter filter = searchUtil.getSearchFilter(request, roleService.sortFields);
         try {
-            ensureAdminAccess(null, null);
             roleStore.getRoles(filter,ret);
+        } catch(WebApplicationException excp) {
+            throw excp;
+        } catch(Throwable excp) {
+            LOG.error("getRoles() failed", excp);
+
+            throw restErrorUtil.createRESTException(excp.getMessage());
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("<== getAllRoles():" + ret);
+        }
+        return ret;
+    }
+
+    @GET
+    @Path("/lookup/roles")
+    public RangerRoleList getAllRolesForUser(@Context HttpServletRequest request) {
+        RangerRoleList ret = new RangerRoleList();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("==> getAllRolesForUser()");
+        }
+        SearchFilter filter = searchUtil.getSearchFilter(request, roleService.sortFields);
+        try {
+            roleStore.getRolesForUser(filter,ret);
         } catch(WebApplicationException excp) {
             throw excp;
         } catch(Throwable excp) {
@@ -909,16 +934,17 @@ public class RoleREST {
             effectiveUser = loggedInUser;
         }
         try {
-            if (!bizUtil.isUserRangerAdmin(effectiveUser)) {
-                existingRole = roleStore.getRole(roleName);
-                ensureRoleAccess(effectiveUser, userGroups, existingRole);
-
-            } else {
-                existingRole = roleStore.getRole(roleName);
+            existingRole = roleStore.getRole(roleName);
+            if (!ensureRoleAccess(effectiveUser, userGroups, existingRole)) {
+                LOG.error("User does not have permission for this operation");
+                return null;
             }
         } catch (Exception ex) {
-            LOG.error(ex.getMessage());
-            return null;
+            if (bizUtil.isUserRangerAdmin(effectiveUser)) {
+                return new RangerRole();
+            } else {
+                return null;
+            }
         }
 
         return existingRole;

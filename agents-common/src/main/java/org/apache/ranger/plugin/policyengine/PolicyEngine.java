@@ -37,15 +37,19 @@ import org.apache.ranger.plugin.contextenricher.RangerContextEnricher;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerPolicyDelta;
 import org.apache.ranger.plugin.model.RangerServiceDef;
+import org.apache.ranger.plugin.model.validation.RangerServiceDefHelper;
 import org.apache.ranger.plugin.model.validation.RangerZoneResourceMatcher;
 import org.apache.ranger.plugin.policyevaluator.RangerPolicyEvaluator;
 import org.apache.ranger.plugin.policyresourcematcher.RangerPolicyResourceMatcher;
+import org.apache.ranger.plugin.resourcematcher.RangerAbstractResourceMatcher;
 import org.apache.ranger.plugin.service.RangerAuthContext;
 import org.apache.ranger.plugin.store.EmbeddedServiceDefsUtil;
 import org.apache.ranger.plugin.util.RangerPerfTracer;
 import org.apache.ranger.plugin.util.RangerPolicyDeltaUtil;
+import org.apache.ranger.plugin.util.RangerReadWriteLock;
 import org.apache.ranger.plugin.util.RangerRoles;
 import org.apache.ranger.plugin.util.ServicePolicies;
+import org.apache.ranger.plugin.util.StringTokenReplacer;
 
 public class PolicyEngine {
     private static final Log LOG = LogFactory.getLog(PolicyEngine.class);
@@ -62,6 +66,17 @@ public class PolicyEngine {
     private final Map<String, String>                 zoneTagServiceMap = new HashMap<>();
     private       boolean                             useForwardedIPAddress;
     private       String[]                            trustedProxyAddresses;
+    private final Map<String, StringTokenReplacer>    tokenReplacers = new HashMap<>();
+
+    private final RangerReadWriteLock                 lock;
+
+    public RangerReadWriteLock.RangerLock getReadLock() {
+        return lock.getReadLock();
+    }
+
+    public RangerReadWriteLock.RangerLock getWriteLock() {
+        return lock.getWriteLock();
+    }
 
     public boolean getUseForwardedIPAddress() {
         return useForwardedIPAddress;
@@ -109,6 +124,10 @@ public class PolicyEngine {
 
     public RangerPluginContext getPluginContext() { return pluginContext; }
 
+    public StringTokenReplacer getStringTokenReplacer(String resourceName) {
+        return tokenReplacers.get(resourceName);
+    }
+
     @Override
     public String toString() {
         return toString(new StringBuilder()).toString();
@@ -144,6 +163,8 @@ public class PolicyEngine {
         }
         sb.append("} ");
 
+        sb.append(lock.toString());
+
         sb.append("}");
 
         return sb;
@@ -159,7 +180,7 @@ public class PolicyEngine {
         return resourceZoneTrie;
     }
 
-    public PolicyEngine(ServicePolicies servicePolicies, RangerPluginContext pluginContext, RangerRoles roles) {
+    public PolicyEngine(ServicePolicies servicePolicies, RangerPluginContext pluginContext, RangerRoles roles, boolean isUseReadWriteLock) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("==> PolicyEngine(" + ", " + servicePolicies + ", " + pluginContext + ")");
         }
@@ -176,6 +197,9 @@ public class PolicyEngine {
         }
 
         this.pluginContext = pluginContext;
+        this.lock          = new RangerReadWriteLock(isUseReadWriteLock);
+
+        LOG.info("Policy engine will" + (isUseReadWriteLock ? " " : " not ") + "perform in place update while processing policy-deltas.");
 
         this.pluginContext.setAuthContext(new RangerAuthContext(null, roles));
 
@@ -192,8 +216,7 @@ public class PolicyEngine {
         if (!options.disableTagPolicyEvaluation
                 && tagPolicies != null
                 && !StringUtils.isEmpty(tagPolicies.getServiceName())
-                && tagPolicies.getServiceDef() != null
-                && !CollectionUtils.isEmpty(tagPolicies.getPolicies())) {
+                && tagPolicies.getServiceDef() != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("PolicyEngine : Building tag-policy-repository for tag-service " + tagPolicies.getServiceName());
             }
@@ -233,6 +256,20 @@ public class PolicyEngine {
             }
         }
 
+        for (RangerServiceDef.RangerResourceDef resourceDef : getServiceDef().getResources()) {
+            Map<String, String> matchOptions = resourceDef.getMatcherOptions();
+
+            if (RangerAbstractResourceMatcher.getOptionReplaceTokens(matchOptions)) {
+                String delimiterPrefix = RangerAbstractResourceMatcher.getOptionDelimiterPrefix(matchOptions);
+                char delimiterStart = RangerAbstractResourceMatcher.getOptionDelimiterStart(matchOptions);
+                char delimiterEnd = RangerAbstractResourceMatcher.getOptionDelimiterEnd(matchOptions);
+                char escapeChar = RangerAbstractResourceMatcher.getOptionDelimiterEscape(matchOptions);
+
+                StringTokenReplacer tokenReplacer = new StringTokenReplacer(delimiterStart, delimiterEnd, escapeChar, delimiterPrefix);
+                tokenReplacers.put(resourceDef.getName(), tokenReplacer);
+            }
+        }
+
         RangerPerfTracer.log(perf);
 
         if (PERF_POLICYENGINE_INIT_LOG.isDebugEnabled()) {
@@ -259,33 +296,46 @@ public class PolicyEngine {
             perf = RangerPerfTracer.getPerfTracer(PERF_POLICYENGINE_INIT_LOG, "RangerPolicyEngine.cloneWithDelta()");
         }
 
-        RangerServiceDef serviceDef    = this.getServiceDef();
-        String           serviceType   = (serviceDef != null) ? serviceDef.getName() : "";
-        boolean          isValidDeltas = false;
+        try (RangerReadWriteLock.RangerLock writeLock = getWriteLock()) {
+            if (LOG.isDebugEnabled()) {
+                if (writeLock.isLockingEnabled()) {
+                    LOG.debug("Acquired lock - " + writeLock);
+                }
+            }
 
-        if (CollectionUtils.isNotEmpty(servicePolicies.getPolicyDeltas()) || MapUtils.isNotEmpty(servicePolicies.getSecurityZones())) {
-            isValidDeltas = CollectionUtils.isEmpty(servicePolicies.getPolicyDeltas()) || RangerPolicyDeltaUtil.isValidDeltas(servicePolicies.getPolicyDeltas(), serviceType);
+            RangerServiceDef serviceDef = this.getServiceDef();
+            String serviceType = (serviceDef != null) ? serviceDef.getName() : "";
+            boolean isValidDeltas = false;
 
-            if (isValidDeltas) {
-                if (MapUtils.isNotEmpty(servicePolicies.getSecurityZones())) {
-                    for (Map.Entry<String, ServicePolicies.SecurityZoneInfo> entry : servicePolicies.getSecurityZones().entrySet()) {
-                        if (!RangerPolicyDeltaUtil.isValidDeltas(entry.getValue().getPolicyDeltas(), serviceType)) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Invalid policy-deltas for security zone:[" + entry.getKey() + "]");
+            if (CollectionUtils.isNotEmpty(servicePolicies.getPolicyDeltas()) || MapUtils.isNotEmpty(servicePolicies.getSecurityZones())) {
+                isValidDeltas = CollectionUtils.isEmpty(servicePolicies.getPolicyDeltas()) || RangerPolicyDeltaUtil.isValidDeltas(servicePolicies.getPolicyDeltas(), serviceType);
+
+                if (isValidDeltas) {
+                    if (MapUtils.isNotEmpty(servicePolicies.getSecurityZones())) {
+                        for (Map.Entry<String, ServicePolicies.SecurityZoneInfo> entry : servicePolicies.getSecurityZones().entrySet()) {
+                            if (!RangerPolicyDeltaUtil.isValidDeltas(entry.getValue().getPolicyDeltas(), serviceType)) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Invalid policy-deltas for security zone:[" + entry.getKey() + "]");
+                                }
+
+                                isValidDeltas = false;
+                                break;
                             }
-
-                            isValidDeltas = false;
-                            break;
                         }
                     }
                 }
             }
-        }
 
-        if (isValidDeltas) {
-            ret = new PolicyEngine(this, servicePolicies);
-        } else {
-            ret = null;
+            if (isValidDeltas) {
+                if (writeLock.isLockingEnabled()) {
+                    updatePolicyEngine(servicePolicies);
+                    ret = this;
+                } else {
+                    ret = new PolicyEngine(this, servicePolicies);
+                }
+            } else {
+                ret = null;
+            }
         }
 
         RangerPerfTracer.log(perf);
@@ -416,66 +466,70 @@ public class PolicyEngine {
         Set<String> ret = null;
 
         if (MapUtils.isNotEmpty(this.resourceZoneTrie)) {
-            List<Set<RangerZoneResourceMatcher>> zoneMatchersList = null;
             Set<RangerZoneResourceMatcher>       smallestList     = null;
+            RangerServiceDefHelper               serviceDefHelper = policyRepository.getOptions().getServiceDefHelper();
 
-            for (Map.Entry<String, ?> entry : resource.entrySet()) {
-                String                                        resourceDefName = entry.getKey();
-                Object                                        resourceValues  = entry.getValue();
-                RangerResourceTrie<RangerZoneResourceMatcher> trie            = resourceZoneTrie.get(resourceDefName);
+            List<String> resourceKeys = resource == null ? new ArrayList<>() : serviceDefHelper.getOrderedResourceNames(resource.keySet());
+
+            for (String resourceDefName : resourceKeys) {
+                RangerResourceTrie<RangerZoneResourceMatcher> trie = resourceZoneTrie.get(resourceDefName);
 
                 if (trie == null) {
                     continue;
                 }
 
-                Set<RangerZoneResourceMatcher> matchedZones = trie.getEvaluatorsForResource(resourceValues);
+                Object resourceValues = resource.get(resourceDefName);
+
+                Set<RangerZoneResourceMatcher> zoneMatchersForResource = trie.getEvaluatorsForResource(resourceValues);
+                Set<RangerZoneResourceMatcher> inheritedZoneMatchers = trie.getInheritedEvaluators();
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("ResourceDefName:[" + resourceDefName + "], values:[" + resourceValues + "], matched-zones:[" + matchedZones + "]");
+                    LOG.debug("ResourceDefName:[" + resourceDefName + "], values:[" + resourceValues + "], matched-zones:[" + zoneMatchersForResource + "], inherited-zones:[" + inheritedZoneMatchers + "]");
                 }
 
-                if (CollectionUtils.isEmpty(matchedZones)) { // no policies for this resource, bail out
-                    zoneMatchersList = null;
-                    smallestList     = null;
-
-                    break;
-                }
-
-                if (smallestList == null) {
-                    smallestList = matchedZones;
-                } else {
-                    if (zoneMatchersList == null) {
-                        zoneMatchersList = new ArrayList<>();
-
-                        zoneMatchersList.add(smallestList);
+                if (smallestList != null) {
+                    if (CollectionUtils.isEmpty(inheritedZoneMatchers) && CollectionUtils.isEmpty(zoneMatchersForResource)) {
+                        smallestList = null;
+                    } else if (CollectionUtils.isEmpty(inheritedZoneMatchers)) {
+                        smallestList.retainAll(zoneMatchersForResource);
+                    } else if (CollectionUtils.isEmpty(zoneMatchersForResource)) {
+                        smallestList.retainAll(inheritedZoneMatchers);
+                    } else {
+                        Set<RangerZoneResourceMatcher> smaller, bigger;
+                        if (zoneMatchersForResource.size() < inheritedZoneMatchers.size()) {
+                            smaller = zoneMatchersForResource;
+                            bigger = inheritedZoneMatchers;
+                        } else {
+                            smaller = inheritedZoneMatchers;
+                            bigger = zoneMatchersForResource;
+                        }
+                        Set<RangerZoneResourceMatcher> tmp = new HashSet<>();
+                        if (smallestList.size() < smaller.size()) {
+                            smallestList.stream().filter(smaller::contains).forEach(tmp::add);
+                            smallestList.stream().filter(bigger::contains).forEach(tmp::add);
+                        } else {
+                            smaller.stream().filter(smallestList::contains).forEach(tmp::add);
+                            if (smallestList.size() < bigger.size()) {
+                                smallestList.stream().filter(bigger::contains).forEach(tmp::add);
+                            } else {
+                                bigger.stream().filter(smallestList::contains).forEach(tmp::add);
+                            }
+                        }
+                        smallestList = tmp;
                     }
-
-                    zoneMatchersList.add(matchedZones);
-
-                    if (smallestList.size() > matchedZones.size()) {
-                        smallestList = matchedZones;
+                } else {
+                    if (CollectionUtils.isEmpty(inheritedZoneMatchers) || CollectionUtils.isEmpty(zoneMatchersForResource)) {
+                        Set<RangerZoneResourceMatcher> tmp = CollectionUtils.isEmpty(inheritedZoneMatchers) ? zoneMatchersForResource : inheritedZoneMatchers;
+                        smallestList = resourceKeys.size() == 1 || CollectionUtils.isEmpty(tmp) ? tmp : new HashSet<>(tmp);
+                    } else {
+                        smallestList = new HashSet<>(zoneMatchersForResource);
+                        smallestList.addAll(inheritedZoneMatchers);
                     }
                 }
             }
-            if (smallestList != null) {
-                final Set<RangerZoneResourceMatcher> intersection;
 
-                if (zoneMatchersList != null) {
-                    intersection = new HashSet<>(smallestList);
-
-                    for (Set<RangerZoneResourceMatcher> zoneMatchers : zoneMatchersList) {
-                        if (zoneMatchers != smallestList) {
-                            // remove zones from intersection that are not in zoneMatchers
-                            intersection.retainAll(zoneMatchers);
-
-                            if (CollectionUtils.isEmpty(intersection)) { // if no zoneMatcher exists, bail out and return empty list
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    intersection = smallestList;
-                }
+            if (CollectionUtils.isNotEmpty(smallestList)) {
+                final Set<RangerZoneResourceMatcher> intersection = smallestList;
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Resource:[" + resource + "], matched-zones:[" + intersection + "]");
@@ -530,83 +584,17 @@ public class PolicyEngine {
         return ret;
     }
 
-
     private PolicyEngine(final PolicyEngine other, ServicePolicies servicePolicies) {
         this.useForwardedIPAddress = other.useForwardedIPAddress;
         this.trustedProxyAddresses = other.trustedProxyAddresses;
         this.pluginContext         = other.pluginContext;
+        this.lock                  = other.lock;
 
         long                    policyVersion                   = servicePolicies.getPolicyVersion() != null ? servicePolicies.getPolicyVersion() : -1L;
         List<RangerPolicyDelta> defaultZoneDeltas               = new ArrayList<>();
         List<RangerPolicyDelta> defaultZoneDeltasForTagPolicies = new ArrayList<>();
 
-        if (MapUtils.isNotEmpty(servicePolicies.getSecurityZones())) {
-            buildZoneTrie(servicePolicies);
-
-            Map<String, List<RangerPolicyDelta>> zoneDeltasMap = new HashMap<>();
-
-            for (Map.Entry<String, ServicePolicies.SecurityZoneInfo> zone : servicePolicies.getSecurityZones().entrySet()) {
-                List<RangerPolicyDelta> deltas = zone.getValue().getPolicyDeltas();
-
-                for (RangerPolicyDelta delta : deltas) {
-                    String zoneName = delta.getZoneName();
-
-                    if (StringUtils.isNotEmpty(zoneName)) {
-                        List<RangerPolicyDelta> zoneDeltas = zoneDeltasMap.get(zoneName);
-
-                        if (zoneDeltas == null) {
-                            zoneDeltas = new ArrayList<>();
-                            zoneDeltasMap.put(zoneName, zoneDeltas);
-                        }
-
-                        zoneDeltas.add(delta);
-                    } else {
-                        LOG.warn("policyDelta : [" + delta + "] does not belong to any zone. Should not have come here.");
-                    }
-                }
-            }
-
-            for (Map.Entry<String, List<RangerPolicyDelta>> entry : zoneDeltasMap.entrySet()) {
-                final String                  zoneName        = entry.getKey();
-                final List<RangerPolicyDelta> zoneDeltas      = entry.getValue();
-                final RangerPolicyRepository  otherRepository = other.zonePolicyRepositories.get(zoneName);
-                final RangerPolicyRepository  policyRepository;
-
-                if (CollectionUtils.isNotEmpty(zoneDeltas)) {
-                    if (otherRepository == null) {
-                        List<RangerPolicy> policies = new ArrayList<>();
-
-                        for (RangerPolicyDelta delta : zoneDeltas) {
-                            if (delta.getChangeType() == RangerPolicyDelta.CHANGE_TYPE_POLICY_CREATE) {
-                                policies.add(delta.getPolicy());
-                            } else {
-                                LOG.warn("Expected changeType:[" + RangerPolicyDelta.CHANGE_TYPE_POLICY_CREATE + "], found policy-change-delta:[" + delta +"]");
-                            }
-                        }
-
-                        servicePolicies.getSecurityZones().get(zoneName).setPolicies(policies);
-
-                        policyRepository = new RangerPolicyRepository(servicePolicies, this.pluginContext, zoneName);
-                    } else {
-                        policyRepository = new RangerPolicyRepository(otherRepository, zoneDeltas, policyVersion);
-                    }
-                } else {
-                    policyRepository = shareWith(otherRepository);
-                }
-
-                zonePolicyRepositories.put(zoneName, policyRepository);
-            }
-        }
-
-        List<RangerPolicyDelta> unzonedDeltas = servicePolicies.getPolicyDeltas();
-
-        for (RangerPolicyDelta delta : unzonedDeltas) {
-            if (servicePolicies.getServiceDef().getName().equals(delta.getServiceType())) {
-                defaultZoneDeltas.add(delta);
-            } else {
-                defaultZoneDeltasForTagPolicies.add(delta);
-            }
-        }
+        getDeltasSortedByZones(servicePolicies, defaultZoneDeltas, defaultZoneDeltasForTagPolicies);
 
         if (other.policyRepository != null && CollectionUtils.isNotEmpty(defaultZoneDeltas)) {
             this.policyRepository = new RangerPolicyRepository(other.policyRepository, defaultZoneDeltas, policyVersion);
@@ -639,7 +627,7 @@ public class PolicyEngine {
 
         List<RangerContextEnricher> tmpList;
         List<RangerContextEnricher> tagContextEnrichers      = tagPolicyRepository == null ? null :tagPolicyRepository.getContextEnrichers();
-        List<RangerContextEnricher> resourceContextEnrichers = policyRepository.getContextEnrichers();
+        List<RangerContextEnricher> resourceContextEnrichers = policyRepository == null ? null : policyRepository.getContextEnrichers();
 
         if (CollectionUtils.isEmpty(tagContextEnrichers)) {
             tmpList = resourceContextEnrichers;
@@ -785,6 +773,123 @@ public class PolicyEngine {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== PolicyEngine.cleanup()");
+        }
+    }
+
+    void updatePolicyEngine(ServicePolicies servicePolicies) {
+
+        long                    policyVersion                   = servicePolicies.getPolicyVersion() != null ? servicePolicies.getPolicyVersion() : -1L;
+        List<RangerPolicyDelta> defaultZoneDeltas               = new ArrayList<>();
+        List<RangerPolicyDelta> defaultZoneDeltasForTagPolicies = new ArrayList<>();
+
+        getDeltasSortedByZones(servicePolicies, defaultZoneDeltas, defaultZoneDeltasForTagPolicies);
+
+        if (this.policyRepository != null && CollectionUtils.isNotEmpty(defaultZoneDeltas)) {
+            this.policyRepository.reinit(defaultZoneDeltas, policyVersion);
+        }
+
+        if (servicePolicies.getTagPolicies() != null && CollectionUtils.isNotEmpty(defaultZoneDeltasForTagPolicies)) {
+            if (this.tagPolicyRepository != null) {
+                this.tagPolicyRepository.reinit(defaultZoneDeltasForTagPolicies, policyVersion);
+            } else {
+                LOG.error("No previous tagPolicyRepository to update! Should not have come here!!");
+            }
+        }
+
+        // Set all repositories to shared
+        if (policyRepository != null) {
+            policyRepository.setShared();
+        }
+        for (RangerPolicyRepository zoneRepository : zonePolicyRepositories.values()) {
+            if (zoneRepository != null) {
+                zoneRepository.setShared();
+            }
+        }
+        if (tagPolicyRepository != null) {
+            tagPolicyRepository.setShared();
+        }
+
+        reorderPolicyEvaluators();
+    }
+
+    private void getDeltasSortedByZones(ServicePolicies servicePolicies, List<RangerPolicyDelta> defaultZoneDeltas, List<RangerPolicyDelta> defaultZoneDeltasForTagPolicies) {
+        long                    policyVersion                   = servicePolicies.getPolicyVersion() != null ? servicePolicies.getPolicyVersion() : -1L;
+
+        if (CollectionUtils.isNotEmpty(defaultZoneDeltas)) {
+            LOG.warn("Emptying out defaultZoneDeltas!");
+            defaultZoneDeltas.clear();
+        }
+        if (CollectionUtils.isNotEmpty(defaultZoneDeltasForTagPolicies)) {
+            LOG.warn("Emptying out defaultZoneDeltasForTagPolicies!");
+            defaultZoneDeltasForTagPolicies.clear();
+        }
+
+        if (MapUtils.isNotEmpty(servicePolicies.getSecurityZones())) {
+            buildZoneTrie(servicePolicies);
+
+            Map<String, List<RangerPolicyDelta>> zoneDeltasMap = new HashMap<>();
+
+            for (Map.Entry<String, ServicePolicies.SecurityZoneInfo> zone : servicePolicies.getSecurityZones().entrySet()) {
+                List<RangerPolicyDelta> deltas = zone.getValue().getPolicyDeltas();
+
+                for (RangerPolicyDelta delta : deltas) {
+                    String zoneName = delta.getZoneName();
+
+                    if (StringUtils.isNotEmpty(zoneName)) {
+                        List<RangerPolicyDelta> zoneDeltas = zoneDeltasMap.get(zoneName);
+
+                        if (zoneDeltas == null) {
+                            zoneDeltas = new ArrayList<>();
+                            zoneDeltasMap.put(zoneName, zoneDeltas);
+                        }
+
+                        zoneDeltas.add(delta);
+                    } else {
+                        LOG.warn("policyDelta : [" + delta + "] does not belong to any zone. Should not have come here.");
+                    }
+                }
+            }
+
+            for (Map.Entry<String, List<RangerPolicyDelta>> entry : zoneDeltasMap.entrySet()) {
+                final String                  zoneName        = entry.getKey();
+                final List<RangerPolicyDelta> zoneDeltas      = entry.getValue();
+                final RangerPolicyRepository  otherRepository = this.zonePolicyRepositories.get(zoneName);
+                final RangerPolicyRepository  policyRepository;
+
+                if (CollectionUtils.isNotEmpty(zoneDeltas)) {
+                    if (otherRepository == null) {
+                        List<RangerPolicy> policies = new ArrayList<>();
+
+                        for (RangerPolicyDelta delta : zoneDeltas) {
+                            if (delta.getChangeType() == RangerPolicyDelta.CHANGE_TYPE_POLICY_CREATE) {
+                                policies.add(delta.getPolicy());
+                            } else {
+                                LOG.warn("Expected changeType:[" + RangerPolicyDelta.CHANGE_TYPE_POLICY_CREATE + "], found policy-change-delta:[" + delta +"]");
+                            }
+                        }
+
+                        servicePolicies.getSecurityZones().get(zoneName).setPolicies(policies);
+
+                        policyRepository = new RangerPolicyRepository(servicePolicies, this.pluginContext, zoneName);
+                    } else {
+                        policyRepository = new RangerPolicyRepository(otherRepository, zoneDeltas, policyVersion);
+                    }
+                } else {
+                    policyRepository = shareWith(otherRepository);
+                }
+
+                zonePolicyRepositories.put(zoneName, policyRepository);
+            }
+        }
+
+        List<RangerPolicyDelta> unzonedDeltas = servicePolicies.getPolicyDeltas();
+
+        for (RangerPolicyDelta delta : unzonedDeltas) {
+            if (servicePolicies.getServiceDef().getName().equals(delta.getServiceType())) {
+                defaultZoneDeltas.add(delta);
+            } else {
+                defaultZoneDeltasForTagPolicies.add(delta);
+            }
         }
     }
 }

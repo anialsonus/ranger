@@ -23,9 +23,16 @@
 	var vBreadCrumbs 	= require('views/common/BreadCrumbs');
 	var XAEnums			= require('utils/XAEnums');
 	var XAUtil			= require('utils/XAUtils');
+	require('Backbone.BootstrapModal')
 	
 	require('backgrid');
 	require('jquery-toggles');
+
+	Backbone.history.getHash = function(window) {
+		var pathStripper = /#.*$/;
+		var match = (window || this).location.href.match(/#(.*)$/);
+		return match ? this.decodeFragment(match[1].replace(pathStripper, '')) : '';
+	};
 
 	window.onbeforeunload = function(e) {
 		if (window._preventNavigation) {
@@ -384,7 +391,7 @@
 	  		   
 	  		 initialize: function(options) {
 		  		  Form.editors.Base.prototype.initialize.call(this, options);
-		  	      this.template = _.template('<input type="text" class="textFiledInputPadding " data-id="textFiledInput"><span><i class="icon-info-sign customTextFiledIcon" data-id="infoTextFiled"></i></span>');
+		  	      this.template = _.template('<input type="text" class="textFiledInputPadding" data-id="textFiledInput"><span><i class="fa-fw fa fa-info-circle customTextFiledIcon" data-id="infoTextFiled"></i></span>');
 		          var schema = this.schema;
 		  		//Allow customising text type (email, phone etc.) for HTML5 browsers
 		  		  var type = 'text';
@@ -525,7 +532,10 @@
                           var Vent = require('modules/Vent');
 			  if(!_.isNull(this.value) && !_.isEmpty(this.value)){
 				this.value.values = _.map(this.value.values, function(val){ return _.escape(val); });
-			    	this.$resource.val(this.value.values.toString())
+					// Set initial value for resources.
+					if (_.isUndefined(def)) {
+						this.$resource.val(this.value.values.toString());
+					}
 			    	//to preserve resources values to text field
 			    	if(!_.isUndefined(this.value.resourceType)){
 			    		this.preserveResourceValues[this.value.resourceType] = this.value.values.toString();	
@@ -564,7 +574,6 @@
 			  	//create select2 if select2Opts is specified
 			    if(!_.isUndefined(this.resourceOpts.select2Opts)){
 			    	this.$resource.select2(this.resourceOpts.select2Opts).on('change',function(e){
-			    		console.log(e)
 			    		that.preserveResourceValues[that.$resourceType.val()] = e.currentTarget.value;
 			    		//check dirty field value for select2 resource field
 			    		that.checkDirtyFieldForSelect2($(e.currentTarget), that, this.value);
@@ -584,17 +593,17 @@
 			  			this.value.isExcludes = _.isUndefined(this.value.isExcludes) ? false : this.value.isExcludes;
 			  			isExcludes = this.value.isExcludes
 			  		}
-					this.$excludeSupport.show();
+					this.$excludeSupport.css('visibility', 'visible');
 			  		this.$excludeSupport.toggles({
 			  			on: !isExcludes,
-			  			text : {on : 'include', off : 'exclude' },
+			  			text : {on : 'Include', off : 'Exclude' },
 			  			width: 80,
 			  		}).on('toggle', function (e, active) {
 			  		    that.value.isExcludes = !active;
 			  		    XAUtil.checkDirtyFieldForToggle($(e.currentTarget))
 			  		});
 				} else {
-					this.$excludeSupport.hide();
+					this.$excludeSupport.css('visibility', 'hidden');
 			  	}
 			  	if(this.recursiveSupport){
 			  		if(!_.isNull(this.value)){
@@ -606,7 +615,7 @@
 		  			this.$recursiveSupport.addClass(this.excludeSupport ? 'recursive-toggle-2' : 'recursive-toggle-1')
 		  			this.$recursiveSupport.toggles({
 		  				on: isRecursive,
-		  				text : {on : 'recursive', off : 'non-recursive' },
+		  				text : {on : 'Recursive', off : 'Non-recursive' },
 		  				width: 120,
 		  			}).on('toggle', function (e, active) {
 		  				that.value.isRecursive = active;
@@ -630,15 +639,14 @@
 		  					that.$resource.select2('val', val)
 		  				}else{
 							that.$resource.select2('val', "");
-							that.value=[];
-		  				}
+						}
 			  			//reset values
 			  			that.value.isExcludes = false;
 			  			that.value.isRecursive = false;
 			  			that.$excludeSupport.trigger('toggleOn');
 			  			($(e.currentTarget).addClass('dirtyField'))
 			  			//resource are shown if parent is selected or showned
-			  			that.$el.parents('.control-group').attr('data-name', 'field-'+this.value);
+			  			that.$el.parents('.form-group').attr('data-name', 'field-'+this.value);
 						//remove error class
 						that.$el.removeClass('error');
 //						if noneFlag is true not trigger parentChildHideShow
@@ -677,7 +685,7 @@
 		  getValue: function() {
 			  var that = this;
 			  //checkParent
-			  if(this.$el.parents('.control-group').hasClass('hideResource')){
+			  if(this.$el.parents('.form-group').hasClass('hideResource')){
 				  return null;
 			  }
 			  this.value['resource'] = this.$resource.val();
@@ -803,7 +811,7 @@
 	              var $tbody = $('<tbody><tr><th><input type="checkbox" data-id="selectAllComponent" /> Component</th><td><strong>Permissions</strong></td></tr></tbody>');
 	              
 	              $selectComp.append($table)
-	              $('<div>').append($selectComp).appendTo(this.$tpl);
+	              $('<div class="mb-1">').append($selectComp).appendTo(this.$tpl);
 	              $table.append($tbody).appendTo(this.$tpl);
 	              
 	              this.$tpl.find('[data-id="selectComp"]').select2(this.options.select2option).on('change',function(e){
@@ -1699,5 +1707,4 @@
 
 		return Picky;
 	})(Backbone, _);
-
 });

@@ -30,6 +30,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ranger.admin.client.datatype.RESTResponse;
 import org.apache.ranger.audit.provider.MiscUtil;
+import org.apache.ranger.authorization.hadoop.config.RangerPluginConfig;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.plugin.model.RangerRole;
 import org.apache.ranger.plugin.util.*;
@@ -52,8 +53,8 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 	private String           clusterName;
 	private RangerRESTClient restClient;
 	private RangerRESTUtils  restUtils   = new RangerRESTUtils();
-	private String 		     supportsPolicyDeltas;
-	private String 		     supportsTagDeltas;
+	private boolean 		 supportsPolicyDeltas;
+	private boolean 		 supportsTagDeltas;
 	private final String     pluginCapabilities = Long.toHexString(new RangerPluginCapability().getPluginCapabilities());
 
 	public static <T> GenericType<List<T>> getGenericType(final T clazz) {
@@ -88,11 +89,16 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		clusterName       				= config.get(propertyPrefix + ".access.cluster.name", "");
 		if(StringUtil.isEmpty(clusterName)){
 			clusterName =config.get(propertyPrefix + ".ambari.cluster.name", "");
+			if (StringUtil.isEmpty(clusterName)) {
+				if (config instanceof RangerPluginConfig) {
+					clusterName = ((RangerPluginConfig)config).getClusterName();
+				}
+			}
 		}
 		int	 restClientConnTimeOutMs	= config.getInt(propertyPrefix + ".policy.rest.client.connection.timeoutMs", 120 * 1000);
 		int	 restClientReadTimeOutMs	= config.getInt(propertyPrefix + ".policy.rest.client.read.timeoutMs", 30 * 1000);
-		supportsPolicyDeltas            = config.get(propertyPrefix + ".policy.rest.supports.policy.deltas", "false");
-		supportsTagDeltas               = config.get(propertyPrefix + ".tag.rest.supports.tag.deltas", "false");
+		supportsPolicyDeltas            = config.getBoolean(propertyPrefix + RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_POLICY_DELTA, RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_POLICY_DELTA_DEFAULT);
+		supportsTagDeltas               = config.getBoolean(propertyPrefix + RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_TAG_DELTA, RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_TAG_DELTA_DEFAULT);
 
         if (!StringUtil.isEmpty(tmpUrl)) {
             url = tmpUrl.trim();
@@ -100,12 +106,6 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
-		if (!"true".equalsIgnoreCase(supportsPolicyDeltas)) {
-			supportsPolicyDeltas = "false";
-		}
-		if (!"true".equalsIgnoreCase(supportsTagDeltas)) {
-			supportsTagDeltas = "false";
-		}
 
 		init(url, sslConfigFileName, restClientConnTimeOutMs , restClientReadTimeOutMs, config);
 
@@ -134,7 +134,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_LAST_ACTIVATION_TIME, Long.toString(lastActivationTimeInMillis));
 		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
 		queryParams.put(RangerRESTUtils.REST_PARAM_CLUSTER_NAME, clusterName);
-		queryParams.put(RangerRESTUtils.REST_PARAM_SUPPORTS_POLICY_DELTAS, supportsPolicyDeltas);
+		queryParams.put(RangerRESTUtils.REST_PARAM_SUPPORTS_POLICY_DELTAS, Boolean.toString(supportsPolicyDeltas));
 		queryParams.put(RangerRESTUtils.REST_PARAM_CAPABILITIES, pluginCapabilities);
 
 		if (isSecureMode) {
@@ -793,7 +793,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.LAST_KNOWN_TAG_VERSION_PARAM, Long.toString(lastKnownVersion));
 		queryParams.put(RangerRESTUtils.REST_PARAM_LAST_ACTIVATION_TIME, Long.toString(lastActivationTimeInMillis));
 		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
-		queryParams.put(RangerRESTUtils.REST_PARAM_SUPPORTS_TAG_DELTAS, supportsTagDeltas);
+		queryParams.put(RangerRESTUtils.REST_PARAM_SUPPORTS_TAG_DELTAS, Boolean.toString(supportsTagDeltas));
 		queryParams.put(RangerRESTUtils.REST_PARAM_CAPABILITIES, pluginCapabilities);
 
 		if (isSecureMode) {

@@ -105,21 +105,11 @@ public class TestPolicyEngine {
 		} else {
 			System.out.println("Audit properties file missing: " + AUDIT_PROPERTIES_FILE);
 
-			auditProperties.setProperty("xasecure.audit.jpa.javax.persistence.jdbc.url", "jdbc:mysql://node-1:3306/xasecure_audit");
-			auditProperties.setProperty("xasecure.audit.jpa.javax.persistence.jdbc.user", "xalogger");
-			auditProperties.setProperty("xasecure.audit.jpa.javax.persistence.jdbc.password", "xalogger");
-			auditProperties.setProperty("xasecure.audit.jpa.javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
-
 			auditProperties.setProperty("xasecure.audit.is.enabled", "false"); // Set this to true to enable audit logging
 			auditProperties.setProperty("xasecure.audit.log4j.is.enabled", "false");
 			auditProperties.setProperty("xasecure.audit.log4j.is.async", "false");
 			auditProperties.setProperty("xasecure.audit.log4j.async.max.queue.size", "100000");
 			auditProperties.setProperty("xasecure.audit.log4j.async.max.flush.interval.ms", "30000");
-			auditProperties.setProperty("xasecure.audit.db.is.enabled", "false");
-			auditProperties.setProperty("xasecure.audit.db.is.async", "false");
-			auditProperties.setProperty("xasecure.audit.db.async.max.queue.size", "100000");
-			auditProperties.setProperty("xasecure.audit.db.async.max.flush.interval.ms", "30000");
-			auditProperties.setProperty("xasecure.audit.db.batch.size", "100");
 		}
 
 		AuditProviderFactory factory = AuditProviderFactory.getInstance();
@@ -263,6 +253,13 @@ public class TestPolicyEngine {
 		String[] hiveTestResourceFiles = {"/policyengine/test_policyengine_hive_incremental_update.json"};
 
 		runTestsFromResourceFiles(hiveTestResourceFiles);
+	}
+
+	@Test
+	public void testPolicyEngine_hdfs_incremental_update() {
+		String[] hdfsTestResourceFiles = {"/policyengine/test_policyengine_hdfs_incremental_update.json"};
+
+		runTestsFromResourceFiles(hdfsTestResourceFiles);
 	}
 
 	@Test
@@ -423,6 +420,35 @@ public class TestPolicyEngine {
 		runTestsFromResourceFiles(resourceFiles);
 	}
 
+	@Test
+	public void testPolicyEngine_superUserAccess() {
+		String[] resourceFiles = {"/policyengine/test_policyengine_super_user_access.json"};
+
+		runTestsFromResourceFiles(resourceFiles);
+	}
+
+	@Test
+	public void testPolicyEngine_auditFilterHdfs() {
+		String[] resourceFiles = {"/policyengine/test_policyengine_audit_filter_hdfs.json"};
+
+		runTestsFromResourceFiles(resourceFiles);
+	}
+
+
+	@Test
+	public void testPolicyEngine_auditFilterHive() {
+		String[] resourceFiles = {"/policyengine/test_policyengine_audit_filter_hive.json"};
+
+		runTestsFromResourceFiles(resourceFiles);
+	}
+
+	@Test
+	public void testPolicyEngine_aws() {
+		String[] awsTestResourceFiles = {"/policyengine/test_policyengine_aws.json"};
+
+		runTestsFromResourceFiles(awsTestResourceFiles);
+	}
+
 	private void runTestsFromResourceFiles(String[] resourceNames) {
 		for(String resourceName : resourceNames) {
 			InputStream inStream = this.getClass().getResourceAsStream(resourceName);
@@ -454,6 +480,7 @@ public class TestPolicyEngine {
 			tagPolicies.setServiceName(testCase.tagPolicyInfo.serviceName);
 			tagPolicies.setServiceDef(testCase.tagPolicyInfo.serviceDef);
 			tagPolicies.setPolicies(testCase.tagPolicyInfo.tagPolicies);
+			tagPolicies.setServiceConfig(testCase.tagPolicyInfo.serviceConfig);
 
 			if (StringUtils.isNotBlank(testCase.auditMode)) {
 				tagPolicies.setAuditMode(testCase.auditMode);
@@ -556,7 +583,6 @@ public class TestPolicyEngine {
 	}
 
     private void runTestCaseTests(RangerPolicyEngine policyEngine, RangerPolicyEngine policyEngineForEvaluatingWithACLs, RangerServiceDef serviceDef, String testName, List<TestData> tests) {
-
         RangerAccessRequest request = null;
 
         for(TestData test : tests) {
@@ -636,11 +662,15 @@ public class TestPolicyEngine {
 
 				result   = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, auditHandler);
 
+				policyEngine.evaluateAuditPolicies(result);
+
 				assertNotNull("result was null! - " + test.name, result);
 				assertEquals("isAllowed mismatched! - " + test.name, expected.getIsAllowed(), result.getIsAllowed());
 				assertEquals("isAudited mismatched! - " + test.name, expected.getIsAudited(), result.getIsAudited());
 
 				result   = policyEngineForEvaluatingWithACLs.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, auditHandler);
+
+				policyEngine.evaluateAuditPolicies(result);
 
                 assertNotNull("result was null! - " + test.name, result);
                 assertEquals("isAllowed mismatched! - " + test.name, expected.getIsAllowed(), result.getIsAllowed());
@@ -653,6 +683,8 @@ public class TestPolicyEngine {
 
                 result   = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_DATAMASK, auditHandler);
 
+                policyEngine.evaluateAuditPolicies(result);
+
                 assertNotNull("result was null! - " + test.name, result);
                 assertEquals("maskType mismatched! - " + test.name, expected.getMaskType(), result.getMaskType());
                 assertEquals("maskCondition mismatched! - " + test.name, expected.getMaskCondition(), result.getMaskCondition());
@@ -660,6 +692,8 @@ public class TestPolicyEngine {
                 assertEquals("policyId mismatched! - " + test.name, expected.getPolicyId(), result.getPolicyId());
 
                 result = policyEngineForEvaluatingWithACLs.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_DATAMASK, auditHandler);
+
+                policyEngine.evaluateAuditPolicies(result);
 
 				assertNotNull("result was null! - " + test.name, result);
 				assertEquals("maskType mismatched! - " + test.name, expected.getMaskType(), result.getMaskType());
@@ -675,11 +709,15 @@ public class TestPolicyEngine {
 
                 result   = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ROWFILTER, auditHandler);
 
+                policyEngine.evaluateAuditPolicies(result);
+
                 assertNotNull("result was null! - " + test.name, result);
                 assertEquals("filterExpr mismatched! - " + test.name, expected.getFilterExpr(), result.getFilterExpr());
                 assertEquals("policyId mismatched! - " + test.name, expected.getPolicyId(), result.getPolicyId());
 
 				result = policyEngineForEvaluatingWithACLs.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ROWFILTER, auditHandler);
+
+				policyEngine.evaluateAuditPolicies(result);
 
 				assertNotNull("result was null! - " + test.name, result);
 				assertEquals("filterExpr mismatched! - " + test.name, expected.getFilterExpr(), result.getFilterExpr());
@@ -738,6 +776,7 @@ public class TestPolicyEngine {
 		class TagPolicyInfo {
 			public String	serviceName;
 			public RangerServiceDef serviceDef;
+			public Map<String, String> serviceConfig;
 			public List<RangerPolicy> tagPolicies;
 		}
 	}

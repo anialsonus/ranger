@@ -24,7 +24,7 @@
     <parent>
         <artifactId>ranger</artifactId>
         <groupId>org.apache.ranger</groupId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -118,6 +118,16 @@
             <groupId>org.apache.atlas</groupId>
             <artifactId>atlas-notification</artifactId>
             <version>${atlas.version}</version>
+            <exclusions>
+                <exclusion>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		</exclusion>
+		<exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.atlas</groupId>

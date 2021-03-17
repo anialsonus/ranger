@@ -111,7 +111,8 @@ define(function(require){
             'searchBtn'           : '[data-js="searchBtn"]',
             'userName'            : '[data-js="userName"]',
             'selectServiceName'   : '[data-js="serviceName"]',
-            'profileTab'          : '.profile-tab'
+            'profileTab'          : '.profile-tab',
+            'roleName'            : '[data-js="roleName"]',
 
         },
 
@@ -127,7 +128,7 @@ define(function(require){
             events['click ' + this.ui.panel]   = 'onPanelToggle';
             events['click ' + this.ui.serviceActive]   = 'serviceActive';
             events['keyup ' + this.ui.zoneSearch] = 'zoneSearch';
-            events['click ' + this.ui.sideCollapes] = 'sideCollapes';
+            events['mousedown ' + this.ui.sideCollapes] = 'sideCollapes';
             events['click ' + this.ui.selectComponet] = 'selectComponet';
             events['click ' + this.ui.expandCollapes] = 'expandCollapes';
             events['click .autoText']  = 'autocompleteFilter';
@@ -152,11 +153,10 @@ define(function(require){
                     vZoneName: ""
                 }
             }
-            if(this.type && this.type.split('?')[1]) {
-                var searchFregment = XAUtil.changeUrlToSearchQuery(decodeURIComponent(this.type.substring(this.type.indexOf("?") + 1)));
-                console.log(searchFregment);
+            if (!_.isUndefined(XAUtil.urlQueryParams())) {
+                var searchFregment = XAUtil.changeUrlToSearchQuery(decodeURIComponent(XAUtil.urlQueryParams()));
                 if(_.has(searchFregment, 'securityZone')) {
-                        App.vZone.vZoneName = searchFregment['securityZone'];
+                    App.vZone.vZoneName = searchFregment['securityZone'];
                 }
             }
             this.initialCall = true;
@@ -172,23 +172,24 @@ define(function(require){
         },
 
         sideCollapes : function (e) {
+            e.stopImmediatePropagation()
             if (this.collapes) {
                 this.collapes = false;
                 App.rSideBar.$el.addClass('expanded');
+                App.rContent.$el.addClass('expanded-contant');
                 App.rSideBar.$el.removeClass('collapsed');
-                //$(e.target).toggleClass('icon-double-angle-left icon-2x');
-                e.target.setAttribute('class' , 'icon-double-angle-left icon-2x')
+                e.target.setAttribute('class' , 'fa-fw fa fa-angle-double-left fa-fw fa fa-2x')
             } else {
                 this.collapes = true;
                 App.rSideBar.$el.addClass('collapsed');
+                App.rContent.$el.removeClass('expanded-contant');
                 App.rSideBar.$el.removeClass('expanded');
-                //$(e.target).toggleClass('icon-double-angle-right icon-2x');
-                e.target.setAttribute('class' , 'icon-double-angle-right icon-2x');
+                e.target.setAttribute('class' , 'fa-fw fa fa-angle-double-right fa-fw fa fa-2x');
             }
         },
 
         onPanelToggle : function (e) {
-            $(e.currentTarget).toggleClass('icon-caret-down');
+            $(e.currentTarget).toggleClass('fa-caret-down');
             $(e.currentTarget).parent().next().slideToggle();
         },
 
@@ -196,7 +197,7 @@ define(function(require){
             console.log(e);
             e.stopPropagation();
             this.$el.find('[data-id="panel"] i#collapesService').each(function(){
-                $(this).toggleClass('icon-caret-down');
+                $(this).toggleClass('fa-caret-down');
                 $(this).parent().next().slideToggle();
             })
         },
@@ -274,7 +275,7 @@ define(function(require){
 
         initializeServices : function(){
             this.services = new RangerServiceList();
-            this.services.setPageSize(100);
+            this.services.setPageSize(200);
             this.services.fetch({
                cache : false,
                async : false
@@ -373,7 +374,8 @@ define(function(require){
                 content : view,
                 okText  :"Import",
                                 title   : App.vZone && App.vZone.vZoneName && !_.isEmpty(App.vZone.vZoneName) ? 'Import Policy For Zone' : 'Import Policy',
-                animate : true
+                animate : true,
+                focusOk : false
             }).open();
 
         },

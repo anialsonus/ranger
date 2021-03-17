@@ -221,6 +221,7 @@ define(function(require) {
                 includeFilter: false,
                 includePagination: false,
                 gridOpts: {
+                    row: Backgrid.Row.extend({}),
                     header: XABackgrid,
                     emptyText: 'No Zone Data Found!!'
                 }
@@ -276,7 +277,8 @@ define(function(require) {
                 content: view,
                 title: 'Zone Administration',
                 allowCancel: true,
-                escape: true
+                escape: true,
+                focusOk : false
             }).open();
         },
 
@@ -328,7 +330,7 @@ define(function(require) {
         },
 
         toggleForZoneServiceTbl : function(e) {
-           $(e.currentTarget).children().toggleClass('icon-chevron-down');
+           $(e.currentTarget).children().toggleClass('fa-chevron-down');
            $(e.currentTarget).next().slideToggle();
         },
 

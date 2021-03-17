@@ -112,13 +112,12 @@ define(function(require){
                     vZoneName: ""
                 }
             }
-            if(this.type && this.type.split('?')[1]) {
-                var searchFregment = XAUtil.changeUrlToSearchQuery(decodeURIComponent(this.type.substring(this.type.indexOf("?") + 1)));
-                console.log(searchFregment);
-                if(_.has(searchFregment, 'securityZone')) {
-                        App.vZone.vZoneName = searchFregment['securityZone'];
-                }
-            }
+			if (!_.isUndefined(XAUtil.urlQueryParams())) {
+				var searchFregment = XAUtil.changeUrlToSearchQuery(decodeURIComponent(XAUtil.urlQueryParams()));
+				if(_.has(searchFregment, 'securityZone')) {
+					App.vZone.vZoneName = searchFregment['securityZone'];
+				}
+			}
         },
 
 		/** all events binding here */
@@ -146,7 +145,7 @@ define(function(require){
 		},
 
 		initializeServices : function(){
-			this.services.setPageSize(100);
+			this.services.setPageSize(200);
 			this.services.fetch({
 			   cache : false,
 			   async : false
@@ -200,7 +199,8 @@ define(function(require){
 				content	: view,
 				title	: 'Export Policy',
 				okText  :"Export",
-				animate : true
+				animate : true,
+				focusOk : false
 			}).open();
 			
 		},
@@ -249,7 +249,8 @@ define(function(require){
 				content	: view,	
 				okText 	:"Import",
                                 title	: App.vZone && App.vZone.vZoneName && !_.isEmpty(App.vZone.vZoneName) ? 'Import Policy For Zone' : 'Import Policy',
-				animate : true
+				animate : true,
+				focusOk : false
 			}).open();
 
 		},
@@ -297,7 +298,8 @@ define(function(require){
                 title: localization.tt("h.serviceDetails"),
                 okText :localization.tt("lbl.ok"),
                 allowCancel : true,
-                escape : true
+                escape : true,
+                focusOk : false
             }).open();
             modal.$el.find('.cancel').hide();
         },
@@ -311,6 +313,7 @@ define(function(require){
             }
             var servicesModel = _.clone(that.services);
             this.ui.selectZoneName.select2({
+                theme: 'bootstrap4',
                 closeOnSelect: false,
                 maximumSelectionSize : 1,
                 width: '220px',

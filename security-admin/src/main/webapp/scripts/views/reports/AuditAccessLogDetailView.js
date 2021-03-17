@@ -36,16 +36,22 @@ define(function(require) {
 
             template: AuditAccessLogDetailTmpl,
 
+            breadCrumbs :function(){
+                return 'Audit Access Log Detail'
+            },
+
             templateHelpers: function() {
-                var that = this;
+                var that = this, result;
+                result = _.filter(XAEnums.AccessResult, function(e){ return e.value === that.auditaccessDetail.accessResult });
                 return {
                     auditaccessDetail : this.auditaccessDetail,
                     eventTime : Globalize.format(new Date(this.auditaccessDetail.eventTime),  "MM/dd/yyyy hh:mm:ss tt"),
-                    result : this.auditaccessDetail.accessResult == 1 ? 'Allowed' : 'Denied',
+                    result : result[0].label,
                     hiveQuery : ((this.auditaccessDetail.serviceType === XAEnums.ServiceType.Service_HIVE.label || this.auditaccessDetail.serviceType === XAEnums.ServiceType.Service_HBASE.label) &&
                                 this.auditaccessDetail.aclEnforcer === "ranger-acl" && this.auditaccessDetail.requestData) ? true : false,
 
                     tag : this.tags ? this.tags.join() : undefined,
+                    auditAccessView : this.auditAccessView,
                 }
             },
 
@@ -65,7 +71,10 @@ define(function(require) {
              */
             initialize: function(options) {
                 console.log("Initialized a Ranger Audit Access Log Details");
-                _.extend(this, _.pick(options, 'auditaccessDetail'));
+                _.extend(this, _.pick(options, 'auditaccessDetail', 'auditAccessView'));
+                if(_.isUndefined(this.auditAccessView)) {
+                    this.auditAccessView = false
+                }
                 if (this.auditaccessDetail.tags) {
                     var tag = JSON.parse(this.auditaccessDetail.tags);
                     this.tags = _.map(tag, function(m) {

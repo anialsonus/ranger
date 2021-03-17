@@ -134,6 +134,23 @@
 		</query>
 	</named-query>
 
+	<named-query name="XXUser.getAllUserIds">
+		<query>SELECT user.name, user.id FROM XXUser user
+		</query>
+	</named-query>
+
+	<named-query name="XXGroupUser.findUsersByGroupIds">
+               <query>SELECT group.name, user.name FROM XXUser user, XXGroup group, XXGroupUser groupUser
+                       WHERE user.id=groupUser.userId and group.id=groupUser.parentGroupId
+               </query>
+       </named-query>
+
+	<named-query name="XXGroupUser.findUsersByGroupName">
+		<query>SELECT user.name, groupUser FROM XXUser user, XXGroupUser groupUser
+			WHERE user.id=groupUser.userId and groupUser.name = :groupName
+		</query>
+	</named-query>
+
 	<!-- XXPermMap -->
 	<named-query name="XXPermMap.findByResourceId">
 		<query>SELECT obj FROM XXPermMap obj WHERE obj.resourceId = :resourceId
@@ -271,6 +288,9 @@
         </query>
 	</named-query>
 
+	<named-query name="XXPolicyItem.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItem obj WHERE obj.policyId = :policyId</query>
+	</named-query>
 	<!-- XXPolicy -->
 
 	<named-query name="XXPolicy.countById">
@@ -324,7 +344,7 @@
 	</named-query>
 
 	<named-query name="XXPolicy.findPolicyByPolicyNameAndServiceName">
-		<query>select obj from XXPolicy obj, XXService svc where obj.name = :policyName and obj.service = svc.id and svc.name = :serviceName</query>
+		<query>select obj from XXPolicy obj, XXService svc where obj.name = :policyName and obj.service = svc.id and svc.name = :serviceName and obj.zoneId = :zoneId</query>
 	</named-query>
 
 	<named-query name="XXPolicy.findPolicyByPolicyNameAndServiceNameAndZoneName">
@@ -345,6 +365,10 @@
 			from XXPolicy policy, XXService service
 			where service.name = :serviceName and service.id = policy.service
 		</query>
+	</named-query>
+
+	<named-query name="XXPolicy.getAllByPolicyItem">
+		<query>select obj from XXPolicy obj where obj.id in (select item.policyId from XXPolicyItem item) </query>
 	</named-query>
 
 	<!-- XXServiceDef -->
@@ -474,13 +498,21 @@
 	</named-query>
 
 	<named-query name="XXServiceConfigMap.findByServiceAndConfigKey">
-		<query>select obj from XXServiceConfigMap obj where 
+		<query>select obj from XXServiceConfigMap obj where
 			obj.serviceId = :serviceId and obj.configKey = :configKey</query>
 	</named-query>
 
 	<named-query name="XXServiceConfigMap.findByServiceNameAndConfigKey">
-		<query>select obj from XXServiceConfigMap obj, XXService xSvc where 
+		<query>select obj from XXServiceConfigMap obj, XXService xSvc where
 			xSvc.name = :name and xSvc.id=obj.serviceId and obj.configKey = :configKey</query>
+	</named-query>
+
+	<named-query name="XXServiceConfigMap.findServiceIdsByConfigKeyAndConfigValueAndFilterByServiceType">
+		<query>SELECT xscm.serviceId FROM XXServiceConfigMap xscm, XXService xs, XXServiceDef xsd
+			WHERE xscm.configKey = :configKey AND xscm.configValue = :configValue
+			AND xscm.serviceId = xs.id AND xs.type = xsd.id
+			AND xsd.name != :serviceType
+		</query>
 	</named-query>
 
 	<!-- XXService -->
@@ -580,6 +612,10 @@
 		<query>select obj from XXPolicyResource obj where obj.resDefId = :resDefId</query>
 	</named-query>
 
+	<named-query name="XXPolicyResource.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyResource obj WHERE obj.policyId = :policyId</query>
+	</named-query>
+
 	<named-query name="XXPolicyResourceMap.findByPolicyId">
 		<query>select obj from XXPolicyResourceMap obj, XXPolicyResource res
                 where obj.resourceId = res.id
@@ -594,6 +630,10 @@
                   and res.policyId in (select policy.id from XXPolicy policy where policy.service = :serviceId)
                 order by res.policyId, obj.resourceId, obj.order
         </query>
+	</named-query>
+
+	<named-query name="XXPolicyResourceMap.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyResourceMap obj WHERE obj.resourceId in (select res.id from XXPolicyResource res where res.policyId = :policyId)</query>
 	</named-query>
 
 	<!-- XXPolicyItemAccess -->
@@ -612,6 +652,10 @@
 		          and item.policyId in (select policy.id from XXPolicy policy where policy.service = :serviceId)
 		        order by item.policyId, obj.policyItemId, obj.order
 		</query>
+	</named-query>
+
+	<named-query name="XXPolicyItemAccess.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItemAccess obj WHERE obj.policyItemId in (select item.id from XXPolicyItem item where item.policyId = :policyId)</query>
 	</named-query>
 
 	<!-- XXPolicyRefAccessType -->
@@ -861,6 +905,10 @@
 		</query>
 	</named-query>
 	
+	<named-query name="XXPolicyItemCondition.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItemCondition obj WHERE obj.policyItemId in (select item.id from XXPolicyItem item where item.policyId = :policyId)</query>
+	</named-query>
+
 	<!-- XXPolicyItemGroupPerm -->
 
 	<named-query name="XXPolicyItemGroupPerm.findByPolicyId">
@@ -877,6 +925,10 @@
 		          and item.policyId in (select policy.id from XXPolicy policy where policy.service = :serviceId)
 		        order by item.policyId, obj.policyItemId, obj.order
 		</query>
+	</named-query>
+
+	<named-query name="XXPolicyItemGroupPerm.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItemGroupPerm obj WHERE obj.policyItemId in (select item.id from XXPolicyItem item where item.policyId = :policyId)</query>
 	</named-query>
 
 	<!-- XXPolicyItemUserPerm -->
@@ -897,6 +949,9 @@
 		</query>
 	</named-query>
 
+	<named-query name="XXPolicyItemUserPerm.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItemUserPerm obj WHERE obj.policyItemId in (select item.id from XXPolicyItem item where item.policyId = :policyId)</query>
+	</named-query>
 	<!-- XXPolicyItemDataMaskInfo -->
 
 	<named-query name="XXPolicyItemDataMaskInfo.findByPolicyId">
@@ -915,6 +970,10 @@
 		</query>
 	</named-query>
 
+	<named-query name="XXPolicyItemDataMaskInfo.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItemDataMaskInfo obj WHERE obj.policyItemId in (select item.id from XXPolicyItem item where item.policyId = :policyId)</query>
+	</named-query>
+
 	<!-- XXPolicyItemRowFilterInfo -->
 
 	<named-query name="XXPolicyItemRowFilterInfo.findByPolicyId">
@@ -931,6 +990,10 @@
 			and item.policyId in (select policy.id from XXPolicy policy where policy.service = :serviceId)
 			order by item.policyId, obj.policyItemId
 		</query>
+	</named-query>
+
+	<named-query name="XXPolicyItemRowFilterInfo.deleteByPolicyId">
+		<query>DELETE FROM XXPolicyItemRowFilterInfo obj WHERE obj.policyItemId in (select item.id from XXPolicyItem item where item.policyId = :policyId)</query>
 	</named-query>
 
 	<!-- XXDataHist -->
@@ -1538,7 +1601,7 @@
     <named-query name="XXPolicyChangeLog.findGreaterThan">
         <query>
             select obj.id, obj.changeType, obj.policyVersion, obj.serviceType, obj.policyType, obj.policyId, obj.zoneName from
-            XXPolicyChangeLog obj where obj.serviceId = :serviceId and obj.id > :id order by obj.id
+            XXPolicyChangeLog obj where obj.serviceId = :serviceId and obj.serviceType = 'tag' and obj.id > :id order by obj.id
         </query>
     </named-query>
 
@@ -1657,6 +1720,122 @@
 
 	<named-query name="XXTagChangeLog.deleteOlderThan">
 		<query>delete from XXTagChangeLog obj where obj.createTime &lt; :olderThan</query>
+	</named-query>
+
+	<!-- RMS queries -->
+
+	<named-query name="XXRMSResourceMapping.deleteByHlResourceId">
+		<query>DELETE FROM XXRMSResourceMapping obj WHERE obj.hlResourceId = :resourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.deleteByLlResourceId">
+		<query>DELETE FROM XXRMSResourceMapping obj WHERE obj.llResourceId = :resourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.findByHlAndLlResourceId">
+		<query>SELECT obj FROM XXRMSResourceMapping obj WHERE obj.hlResourceId = :hlResourceId and obj.llResourceId = :llResourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.deleteByHlAndLlResourceId">
+		<query>DELETE FROM XXRMSResourceMapping obj WHERE obj.hlResourceId = :hlResourceId and obj.llResourceId = :llResourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.deleteByLlOrHlResourceId">
+		<query>DELETE FROM XXRMSResourceMapping obj WHERE obj.hlResourceId = :resourceId or obj.llResourceId = :resourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.findByHlResourceId">
+		<query>SELECT obj.llResourceId FROM XXRMSResourceMapping obj WHERE obj.hlResourceId = :hlResourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.findByLlResourceId">
+		<query>SELECT obj.hlResourceId FROM XXRMSResourceMapping obj WHERE obj.llResourceId = :llResourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.getServiceResourcesByLlResourceId">
+		<query>SELECT obj.id, obj.guid, obj.version, obj.isEnabled, obj.resourceSignature, obj.serviceId, obj.serviceResourceElements FROM XXRMSServiceResource obj where obj.id in (select mapping.hlResourceId FROM XXRMSResourceMapping mapping WHERE mapping.llResourceId = :llResourceId)
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSResourceMapping.deleteByServiceId">
+		<query>
+			DELETE FROM XXRMSResourceMapping mapping WHERE mapping.hlResourceId in (select obj.id from XXRMSServiceResource obj where obj.serviceId = :serviceId) OR
+			mapping.llResourceId in (select obj.id from XXRMSServiceResource obj where obj.serviceId = :serviceId)
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSNotification.getMaxIdOfNotifications">
+		<query>select max(obj.notificationId) from XXRMSNotification obj where obj.llServiceId = :llServiceId and obj.hlServiceId = :hlServiceId</query>
+	</named-query>
+
+	<named-query name="XXRMSNotification.getAllAfterNotificationId">
+		<query>select obj from XXRMSNotification obj where obj.llServiceId = :llServiceId and obj.hlServiceId = :hlServiceId and obj.notificationId &gt; :notificationId order by obj.notificationId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSNotification.getNotificationWithTypeAfterNotificationId">
+		<query>select obj from XXRMSNotification obj where obj.changeType = :changeType and obj.llServiceId = :llServiceId and obj.hlServiceId = :hlServiceId and obj.notificationId &gt; :notificationId order by obj.notificationId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSNotification.getDeletedNotificationsByHlResourceId">
+		<query>select obj from XXRMSNotification obj where obj.changeType = 'delete' and obj.hlResourceId = :hlResourceId and obj.notificationId &gt; :lastKnownVersion order by obj.notificationId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSNotification.deleteByServiceId">
+		<query>DELETE from XXRMSNotification obj where obj.llServiceId = :serviceId or obj.hlServiceId = :serviceId</query>
+	</named-query>
+
+	<named-query name="XXRMSServiceResource.getLlResourceIdForHlResourceId">
+		<query>select obj from XXRMSServiceResource obj, XXRMSNotification notification where obj.id = notification.llResourceId and
+			notification.changeType = 'add' and notification.hlResourceId = :hlResourceId and notification.notificationId > :lastKnownIndex
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSServiceResource.findByServiceId">
+		<query>SELECT obj.id, obj.guid, obj.version, obj.isEnabled, obj.resourceSignature, obj.serviceId, obj.serviceResourceElements FROM XXRMSServiceResource obj where obj.serviceId = :serviceId
+			order by obj.id
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSServiceResource.getByServiceId">
+		<query>select obj.id from XXRMSServiceResource obj where obj.serviceId = :serviceId
+			order by obj.id
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSServiceResource.deleteByServiceId">
+		<query>delete from XXRMSServiceResource obj where obj.serviceId = :serviceId</query>
+	</named-query>
+
+	<named-query name="XXRMSServiceResource.findByServiceAndResourceSignature">
+		<query>select obj from XXRMSServiceResource obj where obj.serviceId = :serviceId and obj.resourceSignature = :resourceSignature</query>
+	</named-query>
+
+	<named-query name="XXRMSServiceResource.deleteById">
+		<query>DELETE FROM XXRMSServiceResource obj WHERE obj.id = :resourceId
+		</query>
+	</named-query>
+
+	<named-query name="XXRMSMappingProvider.findByName">
+		<query>select obj from XXRMSMappingProvider obj where obj.name = :name</query>
+	</named-query>
+
+	<named-query name="XXRole.findByUserId">
+		<query>SELECT obj FROM XXRole obj
+				WHERE obj.id IN (SELECT roleRefUser.roleId FROM XXRoleRefUser roleRefUser WHERE roleRefUser.userId = :userId)
+				OR obj.id IN (SELECT roleRefGroup.roleId FROM XXRoleRefGroup roleRefGroup WHERE roleRefGroup.groupId IN
+				(SELECT groupUser.parentGroupId FROM XXGroupUser groupUser WHERE groupUser.userId = :userId))
+				order by obj.id
+		</query>
 	</named-query>
 
 </entity-mappings>

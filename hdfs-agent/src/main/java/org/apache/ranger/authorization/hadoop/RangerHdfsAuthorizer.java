@@ -23,11 +23,16 @@ import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConst
 import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.HDFS_ROOT_FOLDER_PATH;
 import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.READ_ACCCESS_TYPE;
 import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.WRITE_ACCCESS_TYPE;
+import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.READ_EXECUTE_PERM;
+import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.WRITE_EXECUTE_PERM;
+import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.READ_WRITE_PERM;
+import static org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants.ALL_PERM;
 
 import java.net.InetAddress;
 import java.security.SecureRandom;
 import java.util.*;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -42,6 +47,7 @@ import org.apache.hadoop.hdfs.server.namenode.INodeAttributes;
 import org.apache.hadoop.hdfs.server.namenode.INodeDirectory;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
 import org.apache.hadoop.hdfs.util.ReadOnlyList;
+import org.apache.hadoop.ipc.CallerContext;
 import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -219,24 +225,43 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 		}
 
 		@Override
+		public void checkPermissionWithContext(AuthorizationContext authzContext) throws AccessControlException {
+			checkRangerPermission(authzContext.getFsOwner(), authzContext.getSupergroup(),
+					authzContext.getCallerUgi(), authzContext.getInodeAttrs(),
+					authzContext.getInodes(), authzContext.getPathByNameArr(),
+					authzContext.getSnapshotId(), authzContext.getPath(),
+					authzContext.getAncestorIndex(), authzContext.isDoCheckOwner(),
+					authzContext.getAncestorAccess(), authzContext.getParentAccess(),
+					authzContext.getAccess(), authzContext.getSubAccess(),
+					authzContext.isIgnoreEmptyDir(), authzContext.getOperationName(),
+					authzContext.getCallerContext());
+		}
+
+		@Override
 		public void checkPermission(String fsOwner, String superGroup, UserGroupInformation ugi,
 									INodeAttributes[] inodeAttrs, INode[] inodes, byte[][] pathByNameArr,
 									int snapshotId, String path, int ancestorIndex, boolean doCheckOwner,
 									FsAction ancestorAccess, FsAction parentAccess, FsAction access,
 									FsAction subAccess, boolean ignoreEmptyDir) throws AccessControlException {
-			AuthzStatus            authzStatus = AuthzStatus.NOT_DETERMINED;
-			RangerHdfsPlugin       plugin        = rangerPlugin;
-			RangerHdfsAuditHandler auditHandler  = null;
-			String                 user          = ugi != null ? ugi.getShortUserName() : null;
-			Set<String>            groups        = ugi != null ? Sets.newHashSet(ugi.getGroupNames()) : null;
-			String                 resourcePath  = path;
+			checkRangerPermission(fsOwner, superGroup, ugi, inodeAttrs, inodes, pathByNameArr, snapshotId, path, ancestorIndex, doCheckOwner, ancestorAccess, parentAccess, access, subAccess, ignoreEmptyDir, null, null);
+		}
+
+		private void checkRangerPermission(String fsOwner, String superGroup, UserGroupInformation ugi,
+									INodeAttributes[] inodeAttrs, INode[] inodes, byte[][] pathByNameArr,
+									int snapshotId, String path, int ancestorIndex, boolean doCheckOwner,
+									FsAction ancestorAccess, FsAction parentAccess, FsAction access,
+									FsAction subAccess, boolean ignoreEmptyDir, String operationName, CallerContext callerContext ) throws AccessControlException {
+			AuthzStatus  authzStatus  = AuthzStatus.NOT_DETERMINED;
+			String       resourcePath = path;
+			AuthzContext context      = new AuthzContext(rangerPlugin, ugi, operationName, access == null && parentAccess == null && ancestorAccess == null && subAccess == null);
 
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("==> RangerAccessControlEnforcer.checkPermission("
 						+ "fsOwner=" + fsOwner + "; superGroup=" + superGroup + ", inodesCount=" + (inodes != null ? inodes.length : 0)
-						+ ", snapshotId=" + snapshotId + ", user=" + user + ", provided-path=" + path + ", ancestorIndex=" + ancestorIndex
+						+ ", snapshotId=" + snapshotId + ", user=" + context.user + ", provided-path=" + path + ", ancestorIndex=" + ancestorIndex
 						+ ", doCheckOwner="+ doCheckOwner + ", ancestorAccess=" + ancestorAccess + ", parentAccess=" + parentAccess
-						+ ", access=" + access + ", subAccess=" + subAccess + ", ignoreEmptyDir=" + ignoreEmptyDir + ")");
+						+ ", access=" + access + ", subAccess=" + subAccess + ", ignoreEmptyDir=" + ignoreEmptyDir + ", operationName=" + operationName
+						+ ", callerContext=" + callerContext +")");
 			}
 
 			RangerPerfTracer perf = null;
@@ -246,15 +271,15 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			try {
-				final boolean isTraverseOnlyCheck = access == null && parentAccess == null && ancestorAccess == null && subAccess == null;
 				INode   ancestor            = null;
 				INode   parent              = null;
 				INode   inode               = null;
+				String  providedPath        = path;
 
 				boolean useDefaultAuthorizerOnly = false;
 				boolean doNotGenerateAuditRecord = false;
 
-				if(plugin != null && !ArrayUtils.isEmpty(inodes)) {
+				if (context.plugin != null && !ArrayUtils.isEmpty(inodes)) {
 					int sz = inodeAttrs.length;
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Size of INodeAttrs array:[" + sz + "]");
@@ -320,7 +345,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 					parent   = inodes.length > 1 ? inodes[inodes.length - 2] : null;
 					inode    = inodes[inodes.length - 1]; // could be null while creating a new file
 
-					auditHandler = doNotGenerateAuditRecord ? null : new RangerHdfsAuditHandler(resourcePath, isTraverseOnlyCheck, rangerPlugin.getHadoopModuleName(), rangerPlugin.getExcludedUsers());
+					context.auditHandler = doNotGenerateAuditRecord ? null : new RangerHdfsAuditHandler(providedPath, context.isTraverseOnlyCheck, context.plugin.getHadoopModuleName(), context.plugin.getExcludedUsers(), callerContext != null ? callerContext.toString() : null);
 
 					/* Hadoop versions prior to 2.8.0 didn't ask for authorization of parent/ancestor traversal for
 					 * reading or writing a file. However, Hadoop version 2.8.0 and later ask traversal authorization for
@@ -337,15 +362,15 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 					 * This approach would ensure that Ranger authorization will continue to work with existing policies,
 					 * without requiring policy migration/update, for the changes in behaviour in Hadoop 2.8.0.
 					 */
-					if(authzStatus == AuthzStatus.ALLOW && isTraverseOnlyCheck) {
-						authzStatus = traverseOnlyCheck(inode, inodeAttrs, resourcePath, components, parent, ancestor, ancestorIndex, user, groups, plugin, auditHandler);
+					if (authzStatus == AuthzStatus.ALLOW && context.isTraverseOnlyCheck) {
+						authzStatus = traverseOnlyCheck(inode, inodeAttrs, resourcePath, components, parent, ancestor, ancestorIndex, context);
 					}
 
 					// checkStickyBit
 					if (authzStatus == AuthzStatus.ALLOW && parentAccess != null && parentAccess.implies(FsAction.WRITE) && parent != null && inode != null) {
 						if (parent.getFsPermission() != null && parent.getFsPermission().getStickyBit()) {
 						    // user should be owner of the parent or the inode
-						    authzStatus = (StringUtils.equals(parent.getUserName(), user) || StringUtils.equals(inode.getUserName(), user)) ? AuthzStatus.ALLOW : AuthzStatus.NOT_DETERMINED;
+						    authzStatus = (StringUtils.equals(parent.getUserName(), context.user) || StringUtils.equals(inode.getUserName(), context.user)) ? AuthzStatus.ALLOW : AuthzStatus.NOT_DETERMINED;
 						}
 					}
 
@@ -354,12 +379,12 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 						INodeAttributes ancestorAttribs = inodeAttrs.length > ancestorIndex ? inodeAttrs[ancestorIndex] : null;
 						String ancestorPath = ancestorAttribs != null ? DFSUtil.byteArray2PathString(components, 0, ancestorIndex + 1) : null;
 
-						authzStatus = isAccessAllowed(ancestor, ancestorAttribs, ancestorPath, ancestorAccess, user, groups, plugin, auditHandler);
+						authzStatus = isAccessAllowed(ancestor, ancestorAttribs, ancestorPath, ancestorAccess, context);
 						if (authzStatus == AuthzStatus.NOT_DETERMINED) {
 							authzStatus = checkDefaultEnforcer(fsOwner, superGroup, ugi, inodeAttrs, inodes,
 											pathByNameArr, snapshotId, path, ancestorIndex, doCheckOwner,
 											ancestorAccess, null, null, null, ignoreEmptyDir,
-											isTraverseOnlyCheck, ancestor, parent, inode, auditHandler);
+											ancestor, parent, inode, context);
 						}
 					}
 
@@ -368,12 +393,12 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 						INodeAttributes parentAttribs = inodeAttrs.length > 1 ? inodeAttrs[inodeAttrs.length - 2] : null;
 						String parentPath = parentAttribs != null ? DFSUtil.byteArray2PathString(components, 0, inodeAttrs.length - 1) : null;
 
-						authzStatus = isAccessAllowed(parent, parentAttribs, parentPath, parentAccess, user, groups, plugin, auditHandler);
+						authzStatus = isAccessAllowed(parent, parentAttribs, parentPath, parentAccess, context);
 						if (authzStatus == AuthzStatus.NOT_DETERMINED) {
 							authzStatus = checkDefaultEnforcer(fsOwner, superGroup, ugi, inodeAttrs, inodes,
 											pathByNameArr, snapshotId, path, ancestorIndex, doCheckOwner,
 											null, parentAccess, null, null, ignoreEmptyDir,
-											isTraverseOnlyCheck, ancestor, parent, inode, auditHandler);
+											ancestor, parent, inode, context);
 						}
 					}
 
@@ -381,12 +406,12 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 					if(authzStatus == AuthzStatus.ALLOW && access != null && inode != null) {
 						INodeAttributes inodeAttribs = inodeAttrs.length > 0 ? inodeAttrs[inodeAttrs.length - 1] : null;
 
-						authzStatus = isAccessAllowed(inode, inodeAttribs, resourcePath, access, user, groups, plugin, auditHandler);
+						authzStatus = isAccessAllowed(inode, inodeAttribs, resourcePath, access, context);
 						if (authzStatus == AuthzStatus.NOT_DETERMINED) {
 							authzStatus = checkDefaultEnforcer(fsOwner, superGroup, ugi, inodeAttrs, inodes,
 											pathByNameArr, snapshotId, path, ancestorIndex, doCheckOwner,
 											null, null, access, null, ignoreEmptyDir,
-											isTraverseOnlyCheck, ancestor, parent, inode, auditHandler);
+											ancestor, parent, inode, context);
 						}
 					}
 
@@ -401,7 +426,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 							if (!(cList.isEmpty() && ignoreEmptyDir)) {
 								INodeAttributes dirAttribs = data.dir.getSnapshotINode(snapshotId);
 
-								authzStatus = isAccessAllowed(data.dir, dirAttribs, data.resourcePath, subAccess, user, groups, plugin, auditHandler);
+								authzStatus = isAccessAllowed(data.dir, dirAttribs, data.resourcePath, subAccess, context);
 
 								if(authzStatus != AuthzStatus.ALLOW) {
 									break;
@@ -412,7 +437,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 								boolean optimizeSubAccessAuthEnabled = rangerPlugin.isOptimizeSubAccessAuthEnabled();
 
 								if (optimizeSubAccessAuthEnabled) {
-									subDirAuthStatus = isAccessAllowedForHierarchy(data.dir, dirAttribs, data.resourcePath, subAccess, user, groups, plugin);
+									subDirAuthStatus = isAccessAllowedForHierarchy(data.dir, dirAttribs, data.resourcePath, subAccess, context);
 								}
 
 								if (subDirAuthStatus != AuthzStatus.ALLOW) {
@@ -429,7 +454,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 							authzStatus = checkDefaultEnforcer(fsOwner, superGroup, ugi, inodeAttrs, inodes,
 											pathByNameArr, snapshotId, path, ancestorIndex, doCheckOwner,
 											null, null, null, subAccess, ignoreEmptyDir,
-											isTraverseOnlyCheck, ancestor, parent, inode, auditHandler);
+											ancestor, parent, inode, context);
 
 						}
 					}
@@ -439,7 +464,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 						INodeAttributes inodeAttribs = inodeAttrs.length > 0 ? inodeAttrs[inodeAttrs.length - 1] : null;
 						String          owner        = inodeAttribs != null ? inodeAttribs.getUserName() : null;
 
-						authzStatus = StringUtils.equals(user, owner) ? AuthzStatus.ALLOW : AuthzStatus.NOT_DETERMINED;
+						authzStatus = StringUtils.equals(context.user, owner) ? AuthzStatus.ALLOW : AuthzStatus.NOT_DETERMINED;
 					}
 				}
 
@@ -447,7 +472,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 					authzStatus = checkDefaultEnforcer(fsOwner, superGroup, ugi, inodeAttrs, inodes,
 									pathByNameArr, snapshotId, path, ancestorIndex, doCheckOwner,
 									ancestorAccess, parentAccess, access, subAccess, ignoreEmptyDir,
-									isTraverseOnlyCheck, ancestor, parent, inode, auditHandler);
+									ancestor, parent, inode, context);
 				}
 
 				if(authzStatus != AuthzStatus.ALLOW) {
@@ -463,17 +488,17 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 						}
 					}
 
-					throw new RangerAccessControlException("Permission denied: user=" + user + ", access=" + action + ", inode=\"" + resourcePath + "\"");
+					throw new RangerAccessControlException("Permission denied: user=" + context.user + ", access=" + action + ", inode=\"" + resourcePath + "\"");
 				}
 			} finally {
-				if(auditHandler != null) {
-					auditHandler.flushAudit();
+				if (context.auditHandler != null) {
+					context.auditHandler.flushAudit();
 				}
 
 				RangerPerfTracer.log(perf);
 
 				if(LOG.isDebugEnabled()) {
-					LOG.debug("<== RangerAccessControlEnforcer.checkPermission(" + resourcePath + ", " + access + ", user=" + user + ") : " + authzStatus);
+					LOG.debug("<== RangerAccessControlEnforcer.checkPermission(" + resourcePath + ", " + access + ", user=" + context.user + ") : " + authzStatus);
 				}
 			}
 		}
@@ -483,11 +508,11 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 		    allowed EXECUTE access. Do not audit this authorization check if resource is a file unless access is explicitly denied
 		 */
 		private AuthzStatus traverseOnlyCheck(INode inode, INodeAttributes[] inodeAttrs, String path, byte[][] components, INode parent, INode ancestor, int ancestorIndex,
-											  String user, Set<String> groups, RangerHdfsPlugin plugin, RangerHdfsAuditHandler auditHandler) {
+											  AuthzContext context) {
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("==> RangerAccessControlEnforcer.traverseOnlyCheck("
-						+ "path=" + path + ", user=" + user + ", groups=" + groups + ")");
+						+ "path=" + path + ", user=" + context.user + ", groups=" + context.userGroups + ")");
 			}
 			final AuthzStatus ret;
 
@@ -515,22 +540,21 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 						resourcePath = resourcePath.substring(0, resourcePath.length()-1);
 					}
 				}
-				ret = isAccessAllowedForTraversal(nodeToCheck, nodeAttribs, resourcePath, user, groups, plugin, auditHandler, skipAuditOnAllow);
+				ret = isAccessAllowedForTraversal(nodeToCheck, nodeAttribs, resourcePath, skipAuditOnAllow, context);
 			} else {
 				ret = AuthzStatus.ALLOW;
 			}
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("<== RangerAccessControlEnforcer.traverseOnlyCheck("
-						+ "path=" + path + ", resourcePath=" + resourcePath + ", user=" + user + ", groups=" + groups + ") : " + ret);
+						+ "path=" + path + ", resourcePath=" + resourcePath + ", user=" + context.user + ", groups=" + context.userGroups + ") : " + ret);
 			}
 			return ret;
 		}
 
-		private AuthzStatus isAccessAllowedForTraversal(INode inode, INodeAttributes inodeAttribs, String path, String user, Set<String> groups, RangerHdfsPlugin plugin, RangerHdfsAuditHandler auditHandler, boolean skipAuditOnAllow) {
+		private AuthzStatus isAccessAllowedForTraversal(INode inode, INodeAttributes inodeAttribs, String path, boolean skipAuditOnAllow, AuthzContext context) {
 			final AuthzStatus ret;
 			String pathOwner = inodeAttribs != null ? inodeAttribs.getUserName() : null;
 			FsAction access = FsAction.EXECUTE;
-
 
 			if (pathOwner == null) {
 				pathOwner = inode.getUserName();
@@ -541,12 +565,14 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("==> RangerAccessControlEnforcer.isAccessAllowedForTraversal(" + path + ", " + access + ", " + user + ", " + skipAuditOnAllow + ")");
+				LOG.debug("==> RangerAccessControlEnforcer.isAccessAllowedForTraversal(" + path + ", " + access + ", " + context.user + ", " + skipAuditOnAllow + ")");
 			}
 
-			RangerHdfsAccessRequest request = new RangerHdfsAccessRequest(inode, path, pathOwner, access, EXECUTE_ACCCESS_TYPE, user, groups);
+			RangerHdfsAccessRequest request = new RangerHdfsAccessRequest(inode, path, pathOwner, access, EXECUTE_ACCCESS_TYPE, context.operationName, context.user, context.userGroups);
 
-			RangerAccessResult result = plugin.isAccessAllowed(request, null);
+			RangerAccessResult result = context.plugin.isAccessAllowed(request, null);
+
+			context.saveResult(result);
 
 			if (result != null && result.getIsAccessDetermined() && !result.getIsAllowed()) {
 				ret = AuthzStatus.DENY;
@@ -555,11 +581,13 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			if (ret == AuthzStatus.DENY || (!skipAuditOnAllow && result != null && result.getIsAccessDetermined())) {
-				auditHandler.processResult(result);
+				if (context.auditHandler != null) {
+					context.auditHandler.processResult(result);
+				}
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("<== RangerAccessControlEnforcer.isAccessAllowedForTraversal(" + path + ", " + access + ", " + user + ", " + skipAuditOnAllow + "): " + ret);
+				LOG.debug("<== RangerAccessControlEnforcer.isAccessAllowedForTraversal(" + path + ", " + access + ", " + context.user + ", " + skipAuditOnAllow + "): " + ret);
 			}
 
 			return ret;
@@ -570,8 +598,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 									int snapshotId, String path, int ancestorIndex, boolean doCheckOwner,
 									FsAction ancestorAccess, FsAction parentAccess, FsAction access,
 									FsAction subAccess, boolean ignoreEmptyDir,
-                                    boolean isTraverseOnlyCheck, INode ancestor,
-												 INode parent, INode inode, RangerHdfsAuditHandler auditHandler
+                                    INode ancestor, INode parent, INode inode, AuthzContext context
 												 ) throws AccessControlException {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("==> RangerAccessControlEnforcer.checkDefaultEnforcer("
@@ -579,7 +606,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 						+ ", snapshotId=" + snapshotId + ", path=" + path + ", ancestorIndex=" + ancestorIndex
 						+ ", doCheckOwner=" + doCheckOwner + ", ancestorAccess=" + ancestorAccess + ", parentAccess=" + parentAccess
 						+ ", access=" + access + ", subAccess=" + subAccess + ", ignoreEmptyDir=" + ignoreEmptyDir
-						+ ", isTraverseOnlyCheck=" + isTraverseOnlyCheck + ",ancestor=" + (ancestor == null ? null : ancestor.getFullPathName())
+						+ ", isTraverseOnlyCheck=" + context.isTraverseOnlyCheck + ",ancestor=" + (ancestor == null ? null : ancestor.getFullPathName())
 						+ ", parent=" + (parent == null ? null : parent.getFullPathName()) + ", inode=" + (inode == null ? null : inode.getFullPathName())
 						+ ")");
 			}
@@ -600,10 +627,10 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 
 					authzStatus = AuthzStatus.ALLOW;
 				} finally {
-					if (auditHandler != null) {
+					if (context.auditHandler != null) {
 						INode nodeChecked = inode;
 						FsAction action = access;
-						if (isTraverseOnlyCheck) {
+						if (context.isTraverseOnlyCheck) {
 							if (nodeChecked == null || nodeChecked.isFile()) {
 								if (parent != null) {
 									nodeChecked = parent;
@@ -625,9 +652,20 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 							}
 						}
 
-						String pathChecked = nodeChecked != null ? nodeChecked.getFullPathName() : path;
+						String             pathChecked = nodeChecked != null ? nodeChecked.getFullPathName() : path;
+						boolean            isAllowed   = authzStatus == AuthzStatus.ALLOW;
+						RangerAccessResult lastResult  = context.getLastResult();
 
-						auditHandler.logHadoopEvent(pathChecked, action, authzStatus == AuthzStatus.ALLOW);
+						if (lastResult != null) {
+							lastResult.setIsAllowed(isAllowed);
+							lastResult.setIsAccessDetermined(true);
+
+							context.plugin.evalAuditPolicies(lastResult);
+
+							context.auditHandler.processResult(lastResult);
+						}
+
+						context.auditHandler.logHadoopEvent(pathChecked, action, isAllowed);
 					}
 					RangerPerfTracer.log(hadoopAuthPerf);
 				}
@@ -637,14 +675,14 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 					+ ", snapshotId=" + snapshotId + ", path=" + path + ", ancestorIndex=" + ancestorIndex
 					+ ", doCheckOwner="+ doCheckOwner + ", ancestorAccess=" + ancestorAccess + ", parentAccess=" + parentAccess
 					+ ", access=" + access + ", subAccess=" + subAccess + ", ignoreEmptyDir=" + ignoreEmptyDir
-					+ ", isTraverseOnlyCheck=" + isTraverseOnlyCheck + ",ancestor=" + (ancestor == null ? null : ancestor.getFullPathName())
+					+ ", isTraverseOnlyCheck=" + context.isTraverseOnlyCheck + ",ancestor=" + (ancestor == null ? null : ancestor.getFullPathName())
 					+ ", parent=" + (parent == null ? null : parent.getFullPathName()) + ", inode=" + (inode == null ? null : inode.getFullPathName())
 					+ ") : " + authzStatus );
 
 			return authzStatus;
 		}
 
-		private AuthzStatus isAccessAllowed(INode inode, INodeAttributes inodeAttribs, String path, FsAction access, String user, Set<String> groups, RangerHdfsPlugin plugin, RangerHdfsAuditHandler auditHandler) {
+		private AuthzStatus isAccessAllowed(INode inode, INodeAttributes inodeAttribs, String path, FsAction access, AuthzContext context) {
 			AuthzStatus ret       = null;
 			String      pathOwner = inodeAttribs != null ? inodeAttribs.getUserName() : null;
 
@@ -657,21 +695,26 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("==> RangerAccessControlEnforcer.isAccessAllowed(" + path + ", " + access + ", " + user + ")");
+				LOG.debug("==> RangerAccessControlEnforcer.isAccessAllowed(" + path + ", " + access + ", " + context.user + ")");
 			}
 
 			Set<String> accessTypes = access2ActionListMapper.get(access);
 
 			if(accessTypes == null) {
-				LOG.warn("RangerAccessControlEnforcer.isAccessAllowed(" + path + ", " + access + ", " + user + "): no Ranger accessType found for " + access);
+				LOG.warn("RangerAccessControlEnforcer.isAccessAllowed(" + path + ", " + access + ", " + context.user + "): no Ranger accessType found for " + access);
 
 				accessTypes = access2ActionListMapper.get(FsAction.NONE);
 			}
 
 			for(String accessType : accessTypes) {
-				RangerHdfsAccessRequest request = new RangerHdfsAccessRequest(inode, path, pathOwner, access, accessType, user, groups);
+				RangerHdfsAccessRequest request = new RangerHdfsAccessRequest(inode, path, pathOwner, access, accessType, context.operationName, context.user, context.userGroups);
 
-				RangerAccessResult result = plugin.isAccessAllowed(request, auditHandler);
+				Map<String, Object> requestContext = request.getContext();
+				requestContext.put(RangerAccessRequestUtil.KEY_CONTEXT_ACCESSTYPES, accessTypes);
+
+				RangerAccessResult result = context.plugin.isAccessAllowed(request, context.auditHandler);
+
+				context.saveResult(result);
 
 				if (result == null || !result.getIsAccessDetermined()) {
 					ret = AuthzStatus.NOT_DETERMINED;
@@ -691,13 +734,13 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("<== RangerAccessControlEnforcer.isAccessAllowed(" + path + ", " + access + ", " + user + "): " + ret);
+				LOG.debug("<== RangerAccessControlEnforcer.isAccessAllowed(" + path + ", " + access + ", " + context.user + "): " + ret);
 			}
 
 			return ret;
 		}
 
-		private AuthzStatus isAccessAllowedForHierarchy(INode inode, INodeAttributes inodeAttribs, String path, FsAction access, String user, Set<String> groups, RangerHdfsPlugin plugin) {
+		private AuthzStatus isAccessAllowedForHierarchy(INode inode, INodeAttributes inodeAttribs, String path, FsAction access, AuthzContext context) {
 			AuthzStatus ret   = null;
 			String  pathOwner = inodeAttribs != null ? inodeAttribs.getUserName() : null;
 
@@ -710,7 +753,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("==> RangerAccessControlEnforcer.isAccessAllowedForHierarchy(" + path + ", " + access + ", " + user + ")");
+				LOG.debug("==> RangerAccessControlEnforcer.isAccessAllowedForHierarchy(" + path + ", " + access + ", " + context.user + ")");
 			}
 
 			if (path != null) {
@@ -718,7 +761,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 				Set<String> accessTypes = access2ActionListMapper.get(access);
 
 				if (accessTypes == null) {
-					LOG.warn("RangerAccessControlEnforcer.isAccessAllowedForHierarchy(" + path + ", " + access + ", " + user + "): no Ranger accessType found for " + access);
+					LOG.warn("RangerAccessControlEnforcer.isAccessAllowedForHierarchy(" + path + ", " + access + ", " + context.user + "): no Ranger accessType found for " + access);
 
 					accessTypes = access2ActionListMapper.get(FsAction.NONE);
 				}
@@ -730,9 +773,14 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 				subDirPath = subDirPath + rangerPlugin.getRandomizedWildcardPathName();
 
 				for (String accessType : accessTypes) {
-					RangerHdfsAccessRequest request = new RangerHdfsAccessRequest(null, subDirPath, pathOwner, access, accessType, user, groups);
+					RangerHdfsAccessRequest request = new RangerHdfsAccessRequest(null, subDirPath, pathOwner, access, accessType, context.operationName, context.user, context.userGroups);
 
-					RangerAccessResult result = plugin.isAccessAllowed(request, null);
+					Map<String, Object> requestContext = request.getContext();
+					requestContext.put(RangerAccessRequestUtil.KEY_CONTEXT_ACCESSTYPES, accessTypes);
+
+					RangerAccessResult result = context.plugin.isAccessAllowed(request, null);
+
+					context.saveResult(result);
 
 					if (result == null || !result.getIsAccessDetermined()) {
 						ret = AuthzStatus.NOT_DETERMINED;
@@ -753,7 +801,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("<== RangerAccessControlEnforcer.isAccessAllowedForHierarchy(" + path + ", " + access + ", " + user + "): " + ret);
+				LOG.debug("<== RangerAccessControlEnforcer.isAccessAllowedForHierarchy(" + path + ", " + access + ", " + context.user + "): " + ret);
 			}
 
 			return ret;
@@ -853,14 +901,18 @@ class RangerHdfsResource extends RangerAccessResourceImpl {
 
 class RangerHdfsAccessRequest extends RangerAccessRequestImpl {
 
-	public RangerHdfsAccessRequest(INode inode, String path, String pathOwner, FsAction access, String accessType, String user, Set<String> groups) {
+	public RangerHdfsAccessRequest(INode inode, String path, String pathOwner, FsAction access, String accessType, String action, String user, Set<String> groups) {
+		if (action == null && access != null) {
+			action = access.toString();
+		}
+
 		super.setResource(new RangerHdfsResource(path, pathOwner));
 		super.setAccessType(accessType);
 		super.setUser(user);
 		super.setUserGroups(groups);
 		super.setAccessTime(new Date());
 		super.setClientIPAddress(getRemoteIp());
-		super.setAction(access.toString());
+		super.setAction(action);
 		super.setForwardedAddresses(null);
 		super.setRemoteIPAddress(getRemoteIp());
 
@@ -890,6 +942,34 @@ class RangerHdfsAccessRequest extends RangerAccessRequestImpl {
 	}
 }
 
+class AuthzContext {
+	public final RangerHdfsPlugin       plugin;
+	public final String                 user;
+	public final Set<String>            userGroups;
+	public final String                 operationName;
+	public final boolean                isTraverseOnlyCheck;
+	public       RangerHdfsAuditHandler auditHandler = null;
+	private      RangerAccessResult     lastResult   = null;
+
+	public AuthzContext(RangerHdfsPlugin plugin, UserGroupInformation ugi, String operationName, boolean isTraverseOnlyCheck) {
+		this.plugin              = plugin;
+		this.user                = ugi != null ? ugi.getShortUserName() : null;
+		this.userGroups          = ugi != null ? Sets.newHashSet(ugi.getGroupNames()) : null;
+		this.operationName       = operationName;
+		this.isTraverseOnlyCheck = isTraverseOnlyCheck;
+	}
+
+	public void saveResult(RangerAccessResult result) {
+		if (result != null) {
+			this.lastResult = result;
+		}
+	}
+
+	public RangerAccessResult getLastResult() {
+		return lastResult;
+	}
+}
+
 class RangerHdfsAuditHandler extends RangerDefaultAuditHandler {
 	private static final Log LOG = LogFactory.getLog(RangerHdfsAuditHandler.class);
 
@@ -900,12 +980,14 @@ class RangerHdfsAuditHandler extends RangerDefaultAuditHandler {
 
 	private final String      hadoopModuleName;
 	private final Set<String> excludeUsers;
+	private final String      callerContext;
 
-	public RangerHdfsAuditHandler(String pathToBeValidated, boolean auditOnlyIfDenied, String hadoopModuleName, Set<String> excludedUsers) {
+	public RangerHdfsAuditHandler(String pathToBeValidated, boolean auditOnlyIfDenied, String hadoopModuleName, Set<String> excludedUsers, String callerContext) {
 		this.pathToBeValidated = pathToBeValidated;
 		this.auditOnlyIfDenied = auditOnlyIfDenied;
 		this.hadoopModuleName  = hadoopModuleName;
 		this.excludeUsers      = excludedUsers;
+		this.callerContext     = callerContext;
 	}
 
 	@Override
@@ -914,38 +996,60 @@ class RangerHdfsAuditHandler extends RangerDefaultAuditHandler {
 			LOG.debug("==> RangerHdfsAuditHandler.logAudit(" + result + ")");
 		}
 
-		if(! isAuditEnabled && result.getIsAudited()) {
-			isAuditEnabled = true;
-		}
+		if (result != null) {
+			if(! isAuditEnabled && result.getIsAudited()) {
+				isAuditEnabled = true;
+			}
 
-		if (auditEvent == null) {
-			auditEvent = super.getAuthzEvents(result);
-		}
+			if (auditEvent == null) {
+				auditEvent = super.getAuthzEvents(result);
+			}
 
-		if (auditEvent != null) {
-			RangerAccessRequest request = result.getAccessRequest();
-			RangerAccessResource resource = request.getResource();
-			String resourcePath = resource != null ? resource.getAsString() : null;
+			if (auditEvent != null) {
+				RangerAccessRequest request = result.getAccessRequest();
+				RangerAccessResource resource = request.getResource();
+				String resourcePath = resource != null ? resource.getAsString() : null;
 
-			// Overwrite fields in original auditEvent
-			auditEvent.setEventTime(request.getAccessTime() != null ? request.getAccessTime() : new Date());
-			auditEvent.setAccessType(request.getAction());
-			auditEvent.setResourcePath(this.pathToBeValidated);
-			auditEvent.setResultReason(resourcePath);
+				// Overwrite fields in original auditEvent
+				auditEvent.setEventTime(request.getAccessTime() != null ? request.getAccessTime() : new Date());
+				auditEvent.setAccessType(request.getAction());
+				auditEvent.setResourcePath(this.pathToBeValidated);
+				auditEvent.setResultReason(resourcePath);
 
-			auditEvent.setAccessResult((short) (result.getIsAllowed() ? 1 : 0));
-			auditEvent.setPolicyId(result.getPolicyId());
-			auditEvent.setPolicyVersion(result.getPolicyVersion());
+				auditEvent.setAccessResult((short) (result.getIsAllowed() ? 1 : 0));
+				auditEvent.setPolicyId(result.getPolicyId());
+				auditEvent.setPolicyVersion(result.getPolicyVersion());
+				setRequestData();
 
-			Set<String> tags = getTags(request);
-			if (tags != null) {
-				auditEvent.setTags(tags);
+				auditEvent.setAction(getAccessType(request.getAccessType()));
+				auditEvent.setAdditionalInfo(getAdditionalInfo(request));
+
+				Set<String> tags = getTags(request);
+				if (tags != null) {
+					auditEvent.setTags(tags);
+				}
 			}
 		}
 
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerHdfsAuditHandler.logAudit(" + result + "): " + auditEvent);
 		}
+	}
+
+	@Override
+	public 	String getAdditionalInfo(RangerAccessRequest request) {
+		StringBuilder 			sb   = null;
+		String        additionalInfo = super.getAdditionalInfo(request);
+		if (additionalInfo == null) {
+			sb = new StringBuilder("");
+		} else {
+			sb = new StringBuilder(additionalInfo);
+		}
+		String accessTypes = getAccessTypesAsString(request);
+		if (accessTypes != null) {
+			sb.append(", \"accessTypes\":[").append(accessTypes).append("]");
+		}
+		return sb.toString();
 	}
 
 	public void logHadoopEvent(String path, FsAction action, boolean accessGranted) {
@@ -956,9 +1060,20 @@ class RangerHdfsAuditHandler extends RangerDefaultAuditHandler {
 		if(auditEvent != null) {
 			auditEvent.setResultReason(path);
 			auditEvent.setAccessResult((short) (accessGranted ? 1 : 0));
-			auditEvent.setAccessType(action == null ? null : action.toString());
 			auditEvent.setAclEnforcer(hadoopModuleName);
 			auditEvent.setPolicyId(-1);
+
+			String accessType = (action == null) ? null : action.toString();
+
+			if (StringUtils.isBlank(auditEvent.getAccessType())) { // retain existing value
+				auditEvent.setAccessType(accessType);
+			}
+
+			if (accessType != null) {
+				auditEvent.setAction(getAccessType(accessType));
+			}
+
+			setRequestData();
 		}
 
 		if(LOG.isDebugEnabled()) {
@@ -983,6 +1098,55 @@ class RangerHdfsAuditHandler extends RangerDefaultAuditHandler {
 
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerHdfsAuditHandler.flushAudit(" + isAuditEnabled + ", " + auditEvent + ")");
+		}
+	}
+
+	private String getAccessType(String accessType) {
+		String ret = accessType;
+
+		switch (accessType) {
+			case READ_EXECUTE_PERM:
+				ret = READ_ACCCESS_TYPE;
+				break;
+			case WRITE_EXECUTE_PERM:
+			case READ_WRITE_PERM:
+			case ALL_PERM:
+				ret = WRITE_ACCCESS_TYPE;
+				break;
+			default:
+				break;
+		}
+		return ret.toLowerCase();
+	}
+
+	private String getAccessTypesAsString(RangerAccessRequest request) {
+		String             ret         = null;
+		Map<String,Object> context     = request.getContext();
+		Set<String>        accessTypes = null;
+
+		Object val = context.get(RangerAccessRequestUtil.KEY_CONTEXT_ACCESSTYPES);
+		if (val instanceof Set<?>) {
+			try {
+				accessTypes = (Set<String>) val;
+				ret = getFormattedAccessType(accessTypes);
+			} catch (Throwable t) {
+				LOG.error("getAccessTypesAsString(): failed to get accessTypes from context", t);
+			}
+		}
+		return ret;
+	}
+
+	private String getFormattedAccessType(Set<String> accessTypes) {
+		String ret = null;
+		if (CollectionUtils.isNotEmpty(accessTypes)) {
+			ret = String.join(", ", accessTypes);
+		}
+		return ret;
+	}
+
+	private void setRequestData(){
+		if (StringUtils.isNotBlank(auditEvent.getAccessType()) && StringUtils.isNotBlank(callerContext)) {
+			auditEvent.setRequestData(auditEvent.getAccessType() + "/" + callerContext);
 		}
 	}
 }

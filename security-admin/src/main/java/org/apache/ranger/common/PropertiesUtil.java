@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.ranger.biz.RangerBizUtil;
@@ -71,7 +72,8 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 	    String keyStr = key.toString();
 	    propertiesMap.put(keyStr, props.getProperty(keyStr).trim());
 	}
-	
+
+	String storeType = propertiesMap.get("ranger.keystore.file.type");
 	// update system trust store path with custom trust store.
 	if (propertiesMap!=null && propertiesMap.containsKey("ranger.truststore.file")) {
 		if(!StringUtils.isEmpty(propertiesMap.get("ranger.truststore.file"))){
@@ -85,7 +87,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 					String path=propertiesMap.get("ranger.credential.provider.path");
 					String trustStoreAlias=getProperty("ranger.truststore.alias","trustStoreAlias");
 					if(path!=null && trustStoreAlias!=null){
-						String trustStorePassword=CredentialReader.getDecryptedString(path.trim(), trustStoreAlias.trim());
+						String trustStorePassword=CredentialReader.getDecryptedString(path.trim(), trustStoreAlias.trim(), storeType);
 						if(trustStorePassword!=null&& !trustStorePassword.trim().isEmpty() && !trustStorePassword.trim().equalsIgnoreCase("none")){
 							propertiesMap.put("ranger.truststore.password", trustStorePassword);
 							props.put("ranger.truststore.password", trustStorePassword);
@@ -112,7 +114,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 					String path=propertiesMap.get("ranger.credential.provider.path");
 					String keyStoreAlias=getProperty("ranger.keystore.alias","keyStoreAlias");
 					if(path!=null && keyStoreAlias!=null){
-						String keyStorePassword=CredentialReader.getDecryptedString(path.trim(), keyStoreAlias.trim());
+						String keyStorePassword=CredentialReader.getDecryptedString(path.trim(), keyStoreAlias.trim(), storeType);
 						if(keyStorePassword!=null&& !keyStorePassword.trim().isEmpty() && !keyStorePassword.trim().equalsIgnoreCase("none")){
 							propertiesMap.put("ranger.keystore.password", keyStorePassword);
 							props.put("ranger.keystore.password", keyStorePassword);
@@ -132,7 +134,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 		if(path!=null){
 			String unixAuthKeyStoreAlias=getProperty("ranger.unixauth.keystore.alias","unixAuthKeyStoreAlias");
 			if(unixAuthKeyStoreAlias!=null){
-				String unixAuthKeyStorePass=CredentialReader.getDecryptedString(path.trim(),unixAuthKeyStoreAlias.trim());
+				String unixAuthKeyStorePass=CredentialReader.getDecryptedString(path.trim(),unixAuthKeyStoreAlias.trim(), storeType);
 				if(unixAuthKeyStorePass!=null&& !unixAuthKeyStorePass.trim().isEmpty() &&!unixAuthKeyStorePass.trim().equalsIgnoreCase("none")){
 					propertiesMap.put("ranger.unixauth.keystore.password", unixAuthKeyStorePass);
 					props.put("ranger.unixauth.keystore.password", unixAuthKeyStorePass);
@@ -143,7 +145,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 			//
 			String unixAuthTrustStoreAlias=getProperty("ranger.unixauth.truststore.alias","unixAuthTrustStoreAlias");
 			if(unixAuthTrustStoreAlias!=null){
-				String unixAuthTrustStorePass=CredentialReader.getDecryptedString(path.trim(),unixAuthTrustStoreAlias.trim());
+				String unixAuthTrustStorePass=CredentialReader.getDecryptedString(path.trim(),unixAuthTrustStoreAlias.trim(), storeType);
 				if(unixAuthTrustStorePass!=null&& !unixAuthTrustStorePass.trim().isEmpty() &&!unixAuthTrustStorePass.trim().equalsIgnoreCase("none")){
 					propertiesMap.put("ranger.unixauth.truststore.password", unixAuthTrustStorePass);
 					props.put("ranger.unixauth.truststore.password", unixAuthTrustStorePass);
@@ -159,7 +161,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 		String path=propertiesMap.get("ranger.credential.provider.path");
 		String alias=propertiesMap.get("ranger.jpa.jdbc.credential.alias");
 		if(path!=null && alias!=null){
-			String xaDBPassword=CredentialReader.getDecryptedString(path.trim(),alias.trim());
+			String xaDBPassword=CredentialReader.getDecryptedString(path.trim(),alias.trim(), storeType);
 			if(xaDBPassword!=null&& !xaDBPassword.trim().isEmpty() &&
 					!"none".equalsIgnoreCase(xaDBPassword.trim())){
 				propertiesMap.put("ranger.jpa.jdbc.password", xaDBPassword);
@@ -173,7 +175,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 		String path=propertiesMap.get("ranger.credential.provider.path");
 		String alias=propertiesMap.get("ranger.jpa.audit.jdbc.credential.alias");
 		if(path!=null && alias!=null){
-			String auditDBPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim());
+			String auditDBPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim(), storeType);
 			if(auditDBPassword!=null&& !auditDBPassword.trim().isEmpty() &&
 					!"none".equalsIgnoreCase(auditDBPassword.trim())){
 				propertiesMap.put("ranger.jpa.audit.jdbc.password", auditDBPassword);
@@ -190,7 +192,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 				String path=propertiesMap.get("ranger.credential.provider.path");
 				String alias=propertiesMap.get("ranger.ldap.ad.binddn.credential.alias");
 				if(path!=null && alias!=null){
-					String bindDNPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim());
+					String bindDNPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim(), storeType);
 					if(bindDNPassword!=null&& !bindDNPassword.trim().isEmpty() &&
 							!"none".equalsIgnoreCase(bindDNPassword.trim())){
 						propertiesMap.put("ranger.ldap.ad.bind.password", bindDNPassword);
@@ -209,7 +211,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 				String path=propertiesMap.get("ranger.credential.provider.path");
 				String alias=propertiesMap.get("ranger.ldap.binddn.credential.alias");
 				if(path!=null && alias!=null){
-					String bindDNPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim());
+					String bindDNPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim(), storeType);
 					if(bindDNPassword!=null&& !bindDNPassword.trim().isEmpty() &&
 							!"none".equalsIgnoreCase(bindDNPassword.trim())){
 						propertiesMap.put("ranger.ldap.bind.password", bindDNPassword);
@@ -228,7 +230,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 				String path=propertiesMap.get("ranger.credential.provider.path");
 				String alias=propertiesMap.get("ranger.solr.audit.credential.alias");
 				if(path!=null && alias!=null){
-					String solrAuditPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim());
+					String solrAuditPassword=CredentialReader.getDecryptedString(path.trim(), alias.trim(), storeType);
 					if(solrAuditPassword!=null&& !solrAuditPassword.trim().isEmpty() &&
 							!"none".equalsIgnoreCase(solrAuditPassword.trim())){
 						propertiesMap.put("ranger.solr.audit.user.password", solrAuditPassword);
@@ -282,24 +284,27 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 				propertiesMap.put("ranger.db.ssl.auth.type", db_ssl_auth_type);
 				props.put("ranger.db.ssl.auth.type", db_ssl_auth_type);
 				String ranger_jpa_jdbc_url=propertiesMap.get("ranger.jpa.jdbc.url");
-				if(!StringUtils.isEmpty(ranger_jpa_jdbc_url)){
-					if(ranger_jpa_jdbc_url.contains("?")) {
-						ranger_jpa_jdbc_url=ranger_jpa_jdbc_url.substring(0,ranger_jpa_jdbc_url.indexOf("?"));
-					}
+				if(StringUtils.isNotEmpty(ranger_jpa_jdbc_url) && !ranger_jpa_jdbc_url.contains("?")){
 					StringBuffer ranger_jpa_jdbc_url_ssl=new StringBuffer(ranger_jpa_jdbc_url);
 					if (RangerBizUtil.getDBFlavor()==AppConstants.DB_FLAVOR_MYSQL) {
 						ranger_jpa_jdbc_url_ssl.append("?useSSL="+db_ssl_enabled+"&requireSSL="+db_ssl_required+"&verifyServerCertificate="+db_ssl_verifyServerCertificate);
 					}else if(RangerBizUtil.getDBFlavor()==AppConstants.DB_FLAVOR_POSTGRES) {
-						if("true".equalsIgnoreCase(db_ssl_verifyServerCertificate) || "true".equalsIgnoreCase(db_ssl_required)){
+						String db_ssl_certificate_file = propertiesMap.get("ranger.db.ssl.certificateFile");
+						if(StringUtils.isNotEmpty(db_ssl_certificate_file)) {
+							ranger_jpa_jdbc_url_ssl.append("?ssl="+db_ssl_enabled+"&sslmode=verify-full"+"&sslrootcert="+db_ssl_certificate_file);
+						} else if ("true".equalsIgnoreCase(db_ssl_verifyServerCertificate) || "true".equalsIgnoreCase(db_ssl_required)) {
+							ranger_jpa_jdbc_url_ssl.append("?ssl="+db_ssl_enabled+"&sslmode=verify-full"+"&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
+						} else {
 							ranger_jpa_jdbc_url_ssl.append("?ssl="+db_ssl_enabled);
-						}else{
-							ranger_jpa_jdbc_url_ssl.append("?ssl="+db_ssl_enabled+"&sslfactory=org.postgresql.ssl.NonValidatingFactory");
 						}
 					}
 					propertiesMap.put("ranger.jpa.jdbc.url", ranger_jpa_jdbc_url_ssl.toString());
-					props.put("ranger.jpa.jdbc.url", ranger_jpa_jdbc_url_ssl.toString());
-					logger.info("ranger.jpa.jdbc.url="+ranger_jpa_jdbc_url_ssl.toString());
 				}
+				ranger_jpa_jdbc_url=propertiesMap.get("ranger.jpa.jdbc.url");
+				if(StringUtils.isNotEmpty(ranger_jpa_jdbc_url)) {
+					props.put("ranger.jpa.jdbc.url", ranger_jpa_jdbc_url);
+				}
+				logger.info("ranger.jpa.jdbc.url="+ranger_jpa_jdbc_url);
 			}
 		}
 	}
@@ -311,6 +316,12 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 		}
 		propertiesMap.put(RangerCommonConstants.PROP_COOKIE_NAME, cookieName);
 		props.put(RangerCommonConstants.PROP_COOKIE_NAME, cookieName);
+	}
+
+	keySet = props.keySet();
+	for (Object key : keySet) {
+		String keyStr = key.toString();
+		logger.debug("PropertiesUtil:[" + keyStr + "][" + props.get(keyStr) + "]");
 	}
 
 	super.processProperties(beanFactory, props);
