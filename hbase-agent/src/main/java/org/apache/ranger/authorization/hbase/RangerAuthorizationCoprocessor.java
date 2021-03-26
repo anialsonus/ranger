@@ -40,23 +40,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CoprocessorEnvironment;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HRegionInfo;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.NamespaceDescriptor;
-import org.apache.hadoop.hbase.ProcedureInfo;
-import org.apache.hadoop.hbase.ServerName;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Append;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Durability;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Increment;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorException;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorService;
 import org.apache.hadoop.hbase.coprocessor.MasterCoprocessorEnvironment;
@@ -69,6 +54,7 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.ipc.RpcServer;
 import org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv;
+import org.apache.hadoop.hbase.net.Address;
 import org.apache.hadoop.hbase.procedure2.ProcedureExecutor;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
@@ -750,6 +736,17 @@ public class RangerAuthorizationCoprocessor extends RangerAuthorizationCoprocess
 	public void preBalance(ObserverContext<MasterCoprocessorEnvironment> c) throws IOException {
 		requirePermission("balance", Permission.Action.ADMIN);
 	}
+
+	@Override
+	public boolean preSetSplitOrMergeEnabled(ObserverContext<MasterCoprocessorEnvironment> observerContext, boolean b, Admin.MasterSwitchType masterSwitchType) throws IOException {
+		return false;
+	}
+
+	@Override
+	public void postSetSplitOrMergeEnabled(ObserverContext<MasterCoprocessorEnvironment> observerContext, boolean b, Admin.MasterSwitchType masterSwitchType) throws IOException {
+
+	}
+
 	@Override
 	public boolean preBalanceSwitch(ObserverContext<MasterCoprocessorEnvironment> c, boolean newValue) throws IOException {
 		requirePermission("balanceSwitch", Permission.Action.ADMIN);
@@ -1003,6 +1000,56 @@ public class RangerAuthorizationCoprocessor extends RangerAuthorizationCoprocess
       final String namespace, final Quotas quotas) throws IOException {
     requireGlobalPermission("setNamespaceQuota", namespace, Action.ADMIN);
   }
+
+	@Override
+	public void preDispatchMerge(ObserverContext<MasterCoprocessorEnvironment> observerContext, HRegionInfo hRegionInfo, HRegionInfo hRegionInfo1) throws IOException {
+
+	}
+
+	@Override
+	public void postDispatchMerge(ObserverContext<MasterCoprocessorEnvironment> observerContext, HRegionInfo hRegionInfo, HRegionInfo hRegionInfo1) throws IOException {
+
+	}
+
+	@Override
+	public void preGetClusterStatus(ObserverContext<MasterCoprocessorEnvironment> observerContext) throws IOException {
+
+	}
+
+	@Override
+	public void postGetClusterStatus(ObserverContext<MasterCoprocessorEnvironment> observerContext, ClusterStatus clusterStatus) throws IOException {
+
+	}
+
+	@Override
+	public void preClearDeadServers(ObserverContext<MasterCoprocessorEnvironment> observerContext) throws IOException {
+
+	}
+
+	@Override
+	public void postClearDeadServers(ObserverContext<MasterCoprocessorEnvironment> observerContext, List<ServerName> list, List<ServerName> list1) throws IOException {
+
+	}
+
+	@Override
+	public void preMoveServers(ObserverContext<MasterCoprocessorEnvironment> observerContext, Set<Address> set, String s) throws IOException {
+
+	}
+
+	@Override
+	public void postMoveServers(ObserverContext<MasterCoprocessorEnvironment> observerContext, Set<Address> set, String s) throws IOException {
+
+	}
+
+	@Override
+	public void preRemoveServers(ObserverContext<MasterCoprocessorEnvironment> observerContext, Set<Address> set) throws IOException {
+
+	}
+
+	@Override
+	public void postRemoveServers(ObserverContext<MasterCoprocessorEnvironment> observerContext, Set<Address> set) throws IOException {
+
+	}
 
 	private String coprocessorType = "unknown";
 	private static final String MASTER_COPROCESSOR_TYPE = "master";
