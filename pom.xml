@@ -701,7 +701,7 @@
                 </os>
             </activation>
             <modules>
-		<module>jisql</module>
+		        <module>jisql</module>
                 <module>agents-audit</module>
                 <module>agents-common</module>
                 <module>agents-cred</module>
@@ -749,6 +749,7 @@
                 <module>ranger-kylin-plugin-shim</module>
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
+                <module>plugin-adls</module>
                 <module>plugin-presto</module>
                 <module>ranger-presto-plugin-shim</module>
                 <module>unixauthnative</module>
