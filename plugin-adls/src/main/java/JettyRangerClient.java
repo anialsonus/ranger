@@ -31,9 +31,11 @@ public class JettyRangerClient {
         LOG.info("==> [start] JettyRangerClient");
 
         try {
-            // ServicePolicies servicePolicies = getServicePoliciesIfUpdated(0, 0);
+            ServicePolicies servicePolicies = getServicePoliciesIfUpdated(0, 0);
             // LOG.info("servicePolicies.Users : " + servicePolicies.getPolicies().get(0).getPolicyItems().get(0).getUsers());
 
+            // for PolicyRefresher::loadRoles() from Ranger 2.2.0
+            //
             RangerRoles rangerRoles = getRolesIfUpdated(0, 0);
             LOG.info("rangerRoles : " + rangerRoles);
 
@@ -68,7 +70,7 @@ public class JettyRangerClient {
             LOG.debug("==> RangerAdminRESTClient.getServicePoliciesIfUpdated(" + lastKnownVersion + ", " + lastActivationTimeInMillis + ")");
         }
 
-        final ServicePolicies servicePolicies;
+        ServicePolicies servicePolicies = null;
 
         // final UserGroupInformation user = new UserGroupInformation(); // MiscUtil.getUGILoginUser();
         final boolean isSecureMode = false; // user != null && UserGroupInformation.isSecurityEnabled();
@@ -126,7 +128,8 @@ public class JettyRangerClient {
             servicePolicies = null;
         } else if (response.getStatus() == HttpServletResponse.SC_OK) {
             //
-            servicePolicies = response.readEntity(ServicePolicies.class);
+            // servicePolicies = response.readEntity(ServicePolicies.class);
+            LOG.info("servicePolicies: " + response.readEntity(String.class));
             //
         } else if (response.getStatus() == HttpServletResponse.SC_NOT_FOUND) {
             LOG.error("Error getting policies; service not found. secureMode=" + isSecureMode + ", user=" + "user"
