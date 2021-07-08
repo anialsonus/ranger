@@ -20,7 +20,7 @@ __
 
   Elasticsearch: the name of the class to load: ADLSPlugin
 
-+ Скорректировать работу для Ranger 2.0.0
++ Скорректировать работу для Ranger 2.0.1
   
   Плагин - переработанная версия 2.2.0 c поддержкой версии 2.0.1
   

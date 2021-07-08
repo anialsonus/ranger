@@ -1154,6 +1154,10 @@
                         <exclude>**/node_modules/**</exclude>
                         <exclude>**/package.json</exclude>
                         <exclude>**/package-lock.json</exclude>
+                        <!-- ADLS for -->
+                        <exclude>logs/**</exclude>
+                        <exclude>plugin-adls/**</exclude>
+                        <!--          -->
                     </excludes>
                 </configuration>
             </plugin>
