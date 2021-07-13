@@ -23,8 +23,10 @@ import java.util.Map;
 public class JettyRangerClient {
     private static final Logger LOG = LoggerFactory.getLogger(JettyRangerClient.class);
     private static Client client;
-    private static final String URLService = "http://10.92.3.29:6080/service/plugins/policies/download/Logsearch";
-    private static final String URLRoles = "http://10.92.3.29:6080/service/roles/download/Logsearch";
+    // private static final String URLService = "http://10.92.3.29:6080/service/plugins/policies/download/Logsearch";
+    private static final String URLService = "http://10.92.3.119:6080/service/plugins/policies/download/Logsearch";
+    // private static final String URLRoles = "http://10.92.3.29:6080/service/roles/download/Logsearch";
+    private static final String URLRoles = "http://10.92.3.119:6080/service/roles/download/Logsearch";
     private static final String serviceName = "Logsearch";
 
     public static void main(String[] args) {
@@ -32,7 +34,7 @@ public class JettyRangerClient {
 
         try {
             ServicePolicies servicePolicies = getServicePoliciesIfUpdated(0, 0);
-            // LOG.info("servicePolicies.Users : " + servicePolicies.getPolicies().get(0).getPolicyItems().get(0).getUsers());
+            LOG.info("servicePolicies.Users : " + servicePolicies.getPolicies().get(0).getPolicyItems().get(0).getUsers());
 
             // for PolicyRefresher::loadRoles() from Ranger 2.2.0
             //
@@ -128,8 +130,8 @@ public class JettyRangerClient {
             servicePolicies = null;
         } else if (response.getStatus() == HttpServletResponse.SC_OK) {
             //
-            // servicePolicies = response.readEntity(ServicePolicies.class);
-            LOG.info("servicePolicies: " + response.readEntity(String.class));
+            servicePolicies = response.readEntity(ServicePolicies.class);
+            // LOG.info("servicePolicies: " + response.readEntity(String.class));
             //
         } else if (response.getStatus() == HttpServletResponse.SC_NOT_FOUND) {
             LOG.error("Error getting policies; service not found. secureMode=" + isSecureMode + ", user=" + "user"
