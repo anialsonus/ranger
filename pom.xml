@@ -252,6 +252,7 @@
                 <module>ranger-kylin-plugin-shim</module>
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
+                <module>plugin-adscc</module>
             </modules>
             <build>
                 <plugins>

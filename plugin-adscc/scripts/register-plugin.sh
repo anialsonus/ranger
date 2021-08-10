@@ -1,0 +1,1 @@
+curl -u admin:Orion123 -X POST -H "Accept: application/json" -H "Content-Type: application/json" --data @adscc-ranger.json http://localhost:6080/service/plugins/definitions
