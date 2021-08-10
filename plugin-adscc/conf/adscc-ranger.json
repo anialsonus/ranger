@@ -75,7 +75,7 @@
       "validationRegEx": "",
       "validationMessage": "",
       "uiHint": "",
-      "label": "HTTP URL for the services list eg. http://localhost:8080/services"
+      "label": "HTTP URL for ADSCC Services EndPoint http://localhost:8888/api/v1/endpoints"
     }
   ],
   "enums": [

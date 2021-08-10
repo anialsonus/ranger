@@ -22,14 +22,13 @@ import java.util.Map;
 
 public class AdsccClientImpl extends BaseClient {
 
-    private static final String ADSCC_API_ENDPOINT = "/api/v1/endpoints";
     private static final Logger LOG = Logger.getLogger(AdsccClientImpl.class);
-    private final String adsccUrl;
+    private final String adsccServiceListEndPoint;
 
     public AdsccClientImpl(String serviceName, Map<String, String> configs) {
         super(serviceName, configs, "adscc-client");
-        this.adsccUrl = configs.get("adscc.url");
-        if (StringUtils.isEmpty(this.adsccUrl)) {
+        this.adsccServiceListEndPoint = configs.get("adscc.url");
+        if (StringUtils.isEmpty(this.adsccServiceListEndPoint)) {
             LOG.error("No value found for configuration 'adscc.url'. Adscc resource lookup will fail.");
         }
     }
@@ -58,7 +57,7 @@ public class AdsccClientImpl extends BaseClient {
             return new AdsccServicesList();
         }
         return Subject.doAs(subject, (PrivilegedAction<AdsccServicesList>) () -> {
-            String url = adsccUrl + ADSCC_API_ENDPOINT;
+            String url = adsccServiceListEndPoint;
             ClientResponse response = getClientResponse(url);
             return getAdsccResourceResponse(response, new TypeToken<AdsccServicesList>() {
             }.getType());
@@ -103,7 +102,7 @@ public class AdsccClientImpl extends BaseClient {
                 resource = gson.fromJson(jsonString, type);
             } else {
                 String msgDesc = "Unable to get a valid response for " + "expected mime type : ["
-                        + MediaType.APPLICATION_JSON + "], adscc url: " + adsccUrl
+                        + MediaType.APPLICATION_JSON + "], adscc url: " + adsccServiceListEndPoint
                         + " - got null response.";
                 LOG.error(msgDesc);
                 HadoopException hdpException = new HadoopException(msgDesc);
@@ -114,7 +113,7 @@ public class AdsccClientImpl extends BaseClient {
             throw he;
         } catch (Exception e) {
             String msgDesc = "Exception while getting adscc resource response, adscc url: "
-                    + adsccUrl;
+                    + adsccServiceListEndPoint;
             HadoopException hdpException = new HadoopException(msgDesc, e);
 
             LOG.error(msgDesc, e);

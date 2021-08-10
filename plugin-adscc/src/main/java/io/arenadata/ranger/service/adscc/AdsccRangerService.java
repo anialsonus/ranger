@@ -10,6 +10,7 @@ import org.apache.ranger.plugin.service.ResourceLookupContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AdsccRangerService extends RangerBaseService {
 
@@ -49,9 +50,15 @@ public class AdsccRangerService extends RangerBaseService {
     @Override
     public List<String> lookupResource(ResourceLookupContext context) {
         List<String> ret;
+        String userInput = context.getUserInput();
+        List<String> existsResources = context.getResources().get("path");
         try {
             AdsccResourceManager manager = dispatcher.getResourceManager(serviceName, configs);
-            ret = manager.getServicePaths();
+            ret = manager.getServicePaths().stream()
+                    .filter(resource -> resource.startsWith(userInput))
+                    .filter(resource -> !existsResources.contains(resource))
+                    .collect(Collectors.toList());
+
         } catch (Exception e) {
             LOG.error("<== RangerServiceAdscc.lookupResource() error: " + e);
             throw e;
