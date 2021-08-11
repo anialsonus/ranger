@@ -70,14 +70,4 @@ public class AdsccRangerService extends RangerBaseService {
 
         return ret;
     }
-
-    /*public static void main(String[] args) {
-        AdsccResourceManagerDispatcher dispatcher = new AdsccResourceManagerDispatcherImpl();
-        Map<String,String> kek = new HashMap<>();
-        kek.put("username","kek");
-        kek.put("adscc.url","http://10.92.3.109:8888");
-        AdsccResourceManager manager = dispatcher.getResourceManager("kek", kek);
-        List<String> ff  = manager.getServicePaths();
-        System.out.println(ff);
-    }*/
 }
