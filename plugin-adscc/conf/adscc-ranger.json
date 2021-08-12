@@ -1,0 +1,87 @@
+{
+  "name": "adscc",
+  "label": "ADSCC Service",
+  "description": "ADSCC Ranger Security Plugin",
+  "guid": "b8290b7f-6f69-44a9-89cc-06b6975ea676",
+  "implClass": "io.arenadata.ranger.service.adscc.AdsccRangerService",
+  "version": 1,
+  "isEnabled": 1,
+  "resources": [
+    {
+      "itemId": 1,
+      "name": "path",
+      "type": "path",
+      "level": 10,
+      "parent": "",
+      "mandatory": true,
+      "lookupSupported": true,
+      "recursiveSupported": true,
+      "excludesSupported": true,
+      "matcher": "org.apache.ranger.plugin.resourcematcher.RangerPathResourceMatcher",
+      "matcherOptions": {
+        "wildCard": true,
+        "ignoreCase": true
+      },
+      "validationRegEx": "",
+      "validationMessage": "",
+      "uiHint": "",
+      "label": "HTTP Path",
+      "description": "HTTP Path"
+    }
+  ],
+  "accessTypes": [
+    {
+      "itemId": 1,
+      "name": "get",
+      "label": "get"
+    },
+    {
+      "itemId": 2,
+      "name": "post",
+      "label": "post"
+    },
+    {
+      "itemId": 3,
+      "name": "put",
+      "label": "put"
+    },
+    {
+      "itemId": 4,
+      "name": "delete",
+      "label": "delete"
+    }
+  ],
+  "configs": [
+    {
+      "itemId": 1,
+      "name": "username",
+      "type": "string",
+      "mandatory": true,
+      "label": " Username"
+    },
+    {
+      "itemId": 2,
+      "name": "password",
+      "type": "password",
+      "mandatory": true,
+      "label": " Password"
+    },
+    {
+      "itemId": 3,
+      "name": "adscc.url",
+      "type": "string",
+      "subType": "",
+      "mandatory": true,
+      "validationRegEx": "",
+      "validationMessage": "",
+      "uiHint": "",
+      "label": "HTTP URL for ADSCC Services EndPoint http://localhost:8888/api/v1/endpoints"
+    }
+  ],
+  "enums": [
+  ],
+  "contextEnrichers": [
+  ],
+  "policyConditions": [
+  ]
+}
