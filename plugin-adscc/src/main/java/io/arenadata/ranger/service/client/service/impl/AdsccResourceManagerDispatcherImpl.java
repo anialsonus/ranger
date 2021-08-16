@@ -20,9 +20,13 @@ public class AdsccResourceManagerDispatcherImpl implements AdsccResourceManagerD
 
     @Override
     public AdsccResourceManager getResourceManager(String serviceName, Map<String, String> configs) {
-        AdsccResourceManager manager = new AdsccResourceManagerImpl(serviceName, configs);
-        resourceManagerMap.putIfAbsent(serviceName, manager);
-        return manager;
+        if (resourceManagerMap.get(serviceName) == null) {
+            AdsccResourceManager manager = new AdsccResourceManagerImpl(serviceName, configs);
+            resourceManagerMap.putIfAbsent(serviceName, manager);
+            return manager;
+        } else {
+            return resourceManagerMap.get(serviceName);
+        }
     }
 
 }

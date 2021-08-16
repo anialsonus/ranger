@@ -46,7 +46,7 @@ public class AdsccResourceManagerImpl implements AdsccResourceManager {
                     + configs);
         }
         try {
-            ret = adsccClientImpl.getAdsccEndpoints().getServices();
+            ret = adsccClientImpl.getAdsccEndpoints(true).getServices();
         } catch (Exception e) {
             LOG.error("<== AdsccResourceMgr.getServicePaths() error: " + e);
             throw e;
