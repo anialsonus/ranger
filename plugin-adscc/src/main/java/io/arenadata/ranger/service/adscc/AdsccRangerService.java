@@ -50,6 +50,7 @@ public class AdsccRangerService extends RangerBaseService {
     @Override
     public List<String> lookupResource(ResourceLookupContext context) {
         List<String> ret;
+        String serviceName = getServiceName();
         String userInput = context.getUserInput();
         List<String> existsResources = context.getResources().get("path");
         try {
@@ -58,7 +59,6 @@ public class AdsccRangerService extends RangerBaseService {
                     .filter(resource -> resource.startsWith(userInput))
                     .filter(resource -> !existsResources.contains(resource))
                     .collect(Collectors.toList());
-
         } catch (Exception e) {
             LOG.error("<== RangerServiceAdscc.lookupResource() error: " + e);
             throw e;

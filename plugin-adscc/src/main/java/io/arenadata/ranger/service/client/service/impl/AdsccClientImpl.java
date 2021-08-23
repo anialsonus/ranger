@@ -6,18 +6,22 @@ import com.google.gson.reflect.TypeToken;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import io.arenadata.ranger.service.client.model.AdsccServicesList;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.client.HadoopException;
+import org.apache.ranger.plugin.util.PasswordUtils;
 
 import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AdsccClientImpl extends BaseClient {
@@ -48,7 +52,7 @@ public class AdsccClientImpl extends BaseClient {
     }
 
 
-    public AdsccServicesList getAdsccEndpoints() {
+    public AdsccServicesList getAdsccEndpoints(boolean decryptPassword) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Get adscc resources list");
         }
@@ -58,7 +62,7 @@ public class AdsccClientImpl extends BaseClient {
         }
         return Subject.doAs(subject, (PrivilegedAction<AdsccServicesList>) () -> {
             String url = adsccServiceListEndPoint;
-            ClientResponse response = getClientResponse(url);
+            ClientResponse response = getClientResponse(url, decryptPassword);
             return getAdsccResourceResponse(response, new TypeToken<AdsccServicesList>() {
             }.getType());
         });
@@ -68,15 +72,28 @@ public class AdsccClientImpl extends BaseClient {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Get adscc health status");
         }
-        return !getAdsccEndpoints().getServices().isEmpty();
+        try {
+            List<String> endPoints = getAdsccEndpoints(false).getServices();
+            return !endPoints.isEmpty();
+        } catch (Exception e) {
+            LOG.error("Cannot get adscc health status", e);
+            return false;
+        }
     }
 
-    private ClientResponse getClientResponse(String url) {
+    private ClientResponse getClientResponse(String url, boolean decryptPassword) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getClientResponse():calling " + url);
         }
 
         Client client = Client.create();
+        try {
+            client.addFilter(
+                    new HTTPBasicAuthFilter(connectionProperties.get("username"),
+                            decryptPassword ? PasswordUtils.decryptPassword(connectionProperties.get("password")) : connectionProperties.get("password")));
+        } catch (IOException e) {
+            LOG.error("Cannot decode password", e);
+        }
         WebResource webResource = client.resource(url);
         ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
 
