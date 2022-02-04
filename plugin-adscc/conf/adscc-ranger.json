@@ -82,19 +82,22 @@
       "name": "adscc.ssl.truststore",
       "type": "string",
       "mandatory": false,
-      "label": "Truststore"},
+      "label": "Truststore"
+    },
     {
       "itemId": 5,
       "name": "adscc.ssl.truststorePassword",
       "type": "password",
       "mandatory": false,
-      "label": "Truststore Password"},
+      "label": "Truststore Password"
+    },
     {
       "itemId": 6,
       "name": "adscc.ssl.truststoreType",
       "type": "string",
       "mandatory": false,
-      "label": "Truststore Type"}
+      "label": "Truststore Type"
+    }
   ],
   "enums": [
   ],

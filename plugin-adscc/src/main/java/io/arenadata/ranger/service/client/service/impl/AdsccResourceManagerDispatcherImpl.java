@@ -4,12 +4,10 @@ import io.arenadata.ranger.service.client.model.AdsccClientConfiguration;
 import io.arenadata.ranger.service.client.service.AdsccResourceManager;
 import io.arenadata.ranger.service.client.service.AdsccResourceManagerDispatcher;
 import org.apache.log4j.Logger;
-import org.apache.ranger.plugin.util.PasswordUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -21,17 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AdsccResourceManagerDispatcherImpl implements AdsccResourceManagerDispatcher {
 
-    private final ConcurrentHashMap<String, AdsccResourceManager> resourceManagerMap;
-
     public static final String ADSCC_URL_PATH = "adscc.url";
     public static final String ADSCC_SSL_TRUSTSTORE = "adscc.ssl.truststore";
     public static final String ADSCC_SSL_TRUSTSTORE_TYPE = "adscc.ssl.truststoreType";
     public static final String ADSCC_SSL_TRUSTSTORE_PASSWORD = "adscc.ssl.truststorePassword";
-
-    public static final String INVALID_URL_MSG =  "ADSCC URL must be a valid URL of the form " +
+    public static final String INVALID_URL_MSG = "ADSCC URL must be a valid URL of the form " +
             "http(s)://<hostname>(:<port>)/api/v1/endpoints";
-
     private static final Logger LOG = Logger.getLogger(AdsccResourceManagerDispatcherImpl.class);
+    private final ConcurrentHashMap<String, AdsccResourceManager> resourceManagerMap;
 
 
     public AdsccResourceManagerDispatcherImpl() {
@@ -65,23 +60,23 @@ public class AdsccResourceManagerDispatcherImpl implements AdsccResourceManagerD
                     LOG.error(e);
                 }
             }
-                AdsccClientConfiguration configuration = new AdsccClientConfiguration(validatedUrl, sslContext);
-                AdsccResourceManager manager = new AdsccResourceManagerImpl(serviceName, configs, configuration);
-                resourceManagerMap.putIfAbsent(serviceName, manager);
-                return manager;
-            } else {
-                return resourceManagerMap.get(serviceName);
-            }
+            AdsccClientConfiguration configuration = new AdsccClientConfiguration(validatedUrl, sslContext);
+            AdsccResourceManager manager = new AdsccResourceManagerImpl(serviceName, configs, configuration);
+            resourceManagerMap.putIfAbsent(serviceName, manager);
+            return manager;
+        } else {
+            return resourceManagerMap.get(serviceName);
         }
+    }
 
     private URI validateUrl(String url) {
         URI adsccUri;
         try {
-          adsccUri = new URI(url);
-          if (!adsccUri.getPath().endsWith("/api/v1/endpoints")) {
-              LOG.error(INVALID_URL_MSG);
-              throw new IllegalArgumentException(INVALID_URL_MSG);
-          }
+            adsccUri = new URI(url);
+            if (!adsccUri.getPath().endsWith("/api/v1/endpoints")) {
+                LOG.error(INVALID_URL_MSG);
+                throw new IllegalArgumentException(INVALID_URL_MSG);
+            }
         } catch (URISyntaxException e) {
             LOG.error(INVALID_URL_MSG);
             throw new IllegalArgumentException(INVALID_URL_MSG);
