@@ -1,5 +1,6 @@
 package io.arenadata.ranger.service.client.service.impl;
 
+import io.arenadata.ranger.service.client.model.AdsccClientConfiguration;
 import io.arenadata.ranger.service.client.service.AdsccResourceManager;
 import org.apache.log4j.Logger;
 
@@ -13,10 +14,10 @@ public class AdsccResourceManagerImpl implements AdsccResourceManager {
     private final Map<String, String> configs;
     private final AdsccClientImpl adsccClientImpl;
 
-    public AdsccResourceManagerImpl(String serviceName, Map<String, String> configs) {
+    public AdsccResourceManagerImpl(String serviceName, Map<String, String> configs, AdsccClientConfiguration configuration) {
         this.serviceName = serviceName;
         this.configs = configs;
-        this.adsccClientImpl = new AdsccClientImpl(serviceName, configs);
+        this.adsccClientImpl = new AdsccClientImpl(serviceName, configs, configuration);
     }
 
     @Override

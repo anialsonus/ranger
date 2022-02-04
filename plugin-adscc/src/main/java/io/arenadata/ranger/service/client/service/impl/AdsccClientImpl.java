@@ -6,7 +6,11 @@ import com.google.gson.reflect.TypeToken;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
+import io.arenadata.ranger.service.client.model.AdsccClientConfiguration;
 import io.arenadata.ranger.service.client.model.AdsccServicesList;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
@@ -15,10 +19,16 @@ import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.apache.ranger.plugin.util.PasswordUtils;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
@@ -27,14 +37,11 @@ import java.util.Map;
 public class AdsccClientImpl extends BaseClient {
 
     private static final Logger LOG = Logger.getLogger(AdsccClientImpl.class);
-    private final String adsccServiceListEndPoint;
+    private final AdsccClientConfiguration configuration;
 
-    public AdsccClientImpl(String serviceName, Map<String, String> configs) {
+    public AdsccClientImpl(String serviceName, Map<String, String> configs, AdsccClientConfiguration configuration) {
         super(serviceName, configs, "adscc-client");
-        this.adsccServiceListEndPoint = configs.get("adscc.url");
-        if (StringUtils.isEmpty(this.adsccServiceListEndPoint)) {
-            LOG.error("No value found for configuration 'adscc.url'. Adscc resource lookup will fail.");
-        }
+        this.configuration = configuration;
     }
 
     public Map<String, Object> connectionTest() {
@@ -61,8 +68,7 @@ public class AdsccClientImpl extends BaseClient {
             return new AdsccServicesList();
         }
         return Subject.doAs(subject, (PrivilegedAction<AdsccServicesList>) () -> {
-            String url = adsccServiceListEndPoint;
-            ClientResponse response = getClientResponse(url, decryptPassword);
+            ClientResponse response = getClientResponse(configuration, decryptPassword);
             return getAdsccResourceResponse(response, new TypeToken<AdsccServicesList>() {
             }.getType());
         });
@@ -81,12 +87,16 @@ public class AdsccClientImpl extends BaseClient {
         }
     }
 
-    private ClientResponse getClientResponse(String url, boolean decryptPassword) {
+    private ClientResponse getClientResponse(AdsccClientConfiguration configuration, boolean decryptPassword) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("getClientResponse():calling " + url);
+            LOG.debug("getClientResponse():calling " + configuration.getAdsccUri());
         }
-
-        Client client = Client.create();
+        ClientConfig config = new DefaultClientConfig();
+        if (configuration.getSslContext() != null) {
+            HostnameVerifier hostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+            config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hostnameVerifier, configuration.getSslContext()));
+        }
+        Client client = Client.create(config);
         try {
             client.addFilter(
                     new HTTPBasicAuthFilter(connectionProperties.get("username"),
@@ -94,7 +104,7 @@ public class AdsccClientImpl extends BaseClient {
         } catch (IOException e) {
             LOG.error("Cannot decode password", e);
         }
-        WebResource webResource = client.resource(url);
+        WebResource webResource = client.resource(configuration.getAdsccUri());
         ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
 
         if (response != null) {
@@ -102,7 +112,7 @@ public class AdsccClientImpl extends BaseClient {
                 LOG.debug("getClientResponse():response.getStatus()= " + response.getStatus());
             }
             if (response.getStatus() != HttpStatus.SC_OK) {
-                LOG.warn("getClientResponse():response.getStatus()= " + response.getStatus() + " for URL " + url
+                LOG.warn("getClientResponse():response.getStatus()= " + response.getStatus() + " for URL " + configuration.getAdsccUri()
                         + ", failed to get adscc status, response= " + response.getEntity(String.class));
             }
         }
@@ -119,7 +129,7 @@ public class AdsccClientImpl extends BaseClient {
                 resource = gson.fromJson(jsonString, type);
             } else {
                 String msgDesc = "Unable to get a valid response for " + "expected mime type : ["
-                        + MediaType.APPLICATION_JSON + "], adscc url: " + adsccServiceListEndPoint
+                        + MediaType.APPLICATION_JSON + "], adscc url: " + configuration.getAdsccUri()
                         + " - got null response.";
                 LOG.error(msgDesc);
                 HadoopException hdpException = new HadoopException(msgDesc);
@@ -130,7 +140,7 @@ public class AdsccClientImpl extends BaseClient {
             throw he;
         } catch (Exception e) {
             String msgDesc = "Exception while getting adscc resource response, adscc url: "
-                    + adsccServiceListEndPoint;
+                    + configuration.getAdsccUri();
             HadoopException hdpException = new HadoopException(msgDesc, e);
 
             LOG.error(msgDesc, e);
