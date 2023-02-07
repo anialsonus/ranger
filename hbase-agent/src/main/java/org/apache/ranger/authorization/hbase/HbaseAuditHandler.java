@@ -18,11 +18,11 @@
  */
 package org.apache.ranger.authorization.hbase;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.plugin.policyengine.RangerAccessResultProcessor;
+
+import java.util.Collection;
+import java.util.List;
 
 public interface HbaseAuditHandler extends RangerAccessResultProcessor {
 

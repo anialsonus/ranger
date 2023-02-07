@@ -18,20 +18,20 @@
  */
 package org.apache.ranger.authorization.hbase;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.google.common.collect.ImmutableSet;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.filter.Filter.ReturnCode;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.filter.Filter.ReturnCode;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RangerAuthorizationFilterTest {
 

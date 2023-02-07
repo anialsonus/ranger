@@ -19,11 +19,6 @@
 
 package org.apache.ranger.authorization.hbase;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.base.MoreObjects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +27,11 @@ import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.filter.FilterBase;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 public class RangerAuthorizationFilter extends FilterBase {
 

@@ -18,9 +18,9 @@
  */
 package org.apache.ranger.authorization.hbase;
 
-import java.util.Set;
-
 import org.apache.hadoop.hbase.security.User;
+
+import java.util.Set;
 
 public interface HbaseUserUtils {
 	/**

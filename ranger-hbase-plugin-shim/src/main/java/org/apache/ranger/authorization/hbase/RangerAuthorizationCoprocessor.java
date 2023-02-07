@@ -1115,23 +1115,6 @@ public class RangerAuthorizationCoprocessor implements RegionCoprocessor, Master
 		}
 	}
 
-	@Override
-	public void hasPermission(RpcController controller, AccessControlProtos.HasPermissionRequest request, RpcCallback<AccessControlProtos.HasPermissionResponse> done) {
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("==> RangerAuthorizationCoprocessor.hasPermission()");
-		}
-
-		try {
-			activatePluginClassLoader();
-			implAccessControlService.hasPermission(controller, request, done);
-		} finally {
-			deactivatePluginClassLoader();
-		}
-
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("<== RangerAuthorizationCoprocessor.hasPermission()");
-		}
-	}
 
 	@Override
 	public void getUserPermissions(RpcController controller, GetUserPermissionsRequest request,	RpcCallback<GetUserPermissionsResponse> done) {

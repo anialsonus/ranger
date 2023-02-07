@@ -17,40 +17,22 @@
 
 package org.apache.ranger.authorization.hbase;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.NamespaceDescriptor;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.SnapshotDescription;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.security.access.AccessControlClient;
-import org.apache.hadoop.hbase.security.access.NamespacePermission;
-import org.apache.hadoop.hbase.security.access.Permission;
-import org.apache.hadoop.hbase.security.access.UserPermission;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * A custom RangerAdminClient is plugged into Ranger in turn, which loads security policies from a local file. These policies were 
@@ -974,65 +956,6 @@ public class HBaseRangerAuthorizationTest {
 
         conn.close();
     }
-
-	@Test
-	public void testGetUserPermission() throws Throwable {
-		final Configuration conf = HBaseConfiguration.create();
-		conf.set("hbase.zookeeper.quorum", "localhost");
-		conf.set("hbase.zookeeper.property.clientPort", "" + port);
-		conf.set("zookeeper.znode.parent", "/hbase-unsecure");
-		String user = "IT";
-		UserGroupInformation ugi = UserGroupInformation.createUserForTesting(user, new String[] { "IT" });
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try (Connection conn = ConnectionFactory.createConnection(conf)) {
-					AccessControlClient.getUserPermissions(conn, "temp");
-					Assert.fail();
-				} catch (Throwable e) {
-					// expected
-				}
-				return null;
-			}
-
-		});
-
-		user = "QA";
-		ugi = UserGroupInformation.createUserForTesting(user, new String[] { "QA" });
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				List<UserPermission> userPermissions;
-				try (Connection conn = ConnectionFactory.createConnection(conf)) {
-					userPermissions = AccessControlClient.getUserPermissions(conn, "@test_namespace");
-				} catch (Throwable e) {
-					throw new Exception(e);
-				}
-				boolean found = false;
-				for (UserPermission namespacePermission : userPermissions) {
-					if (namespacePermission.getPermission() instanceof NamespacePermission) {
-						found = StringUtils.equals(namespacePermission.getUser(), "@QA");
-						if (found) {
-							break;
-						}
-					}
-				}
-				Assert.assertTrue("QA is not found", found);
-				return null;
-			}
-		});
-
-		List<UserPermission> userPermissions;
-		try (Connection conn = ConnectionFactory.createConnection(conf)) {
-			userPermissions = AccessControlClient.getUserPermissions(conn, "temp5");
-		} catch (Throwable e) {
-			throw new Exception(e);
-		}
-
-		UserPermission userPermission = new UserPermission("@IT",
-				Permission.newBuilder(TableName.valueOf("temp5")).withActions(Permission.Action.READ, Permission.Action.WRITE, Permission.Action.EXEC).build());
-
-		Assert.assertTrue("@IT permission should be there", userPermissions.contains(userPermission));
-
-	}
 
     private static int getFreePort() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);

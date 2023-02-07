@@ -18,17 +18,13 @@
  */
 package org.apache.ranger.authorization.hbase;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.util.Bytes;
+
+import java.util.*;
 
 public class ColumnIterator implements Iterator<String> {
 	// TODO write tests for this class

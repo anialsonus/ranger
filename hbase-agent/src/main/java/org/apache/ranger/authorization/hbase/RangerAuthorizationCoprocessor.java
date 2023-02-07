@@ -17,13 +17,14 @@
  * under the License.
  */
 package org.apache.ranger.authorization.hbase;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.*;
-import java.util.Map.Entry;
-import java.security.PrivilegedExceptionAction;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.MapMaker;
+import com.google.common.collect.Sets;
 import com.google.protobuf.Message;
+import com.google.protobuf.RpcCallback;
+import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hbase.filter.ByteArrayComparable;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.ipc.RpcServer;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.protobuf.generated.AccessControlProtos;
 import org.apache.hadoop.hbase.protobuf.generated.AccessControlProtos.AccessControlService;
 import org.apache.hadoop.hbase.quotas.GlobalQuotaSettings;
@@ -49,7 +51,6 @@ import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.security.UserProvider;
 import org.apache.hadoop.hbase.security.access.*;
 import org.apache.hadoop.hbase.security.access.Permission.Action;
-import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.shaded.protobuf.ResponseConverter;
 import org.apache.hadoop.hbase.shaded.protobuf.generated.ClientProtos.CleanupBulkLoadRequest;
 import org.apache.hadoop.hbase.shaded.protobuf.generated.ClientProtos.PrepareBulkLoadRequest;
@@ -63,25 +64,18 @@ import org.apache.ranger.authorization.hadoop.constants.RangerHadoopConstants;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.plugin.audit.RangerDefaultAuditHandler;
 import org.apache.ranger.plugin.model.RangerPolicy;
-import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
-import org.apache.ranger.plugin.policyengine.RangerAccessResult;
-import org.apache.ranger.plugin.policyengine.RangerAccessResultProcessor;
-import org.apache.ranger.plugin.policyengine.RangerAccessRequestImpl;
-import org.apache.ranger.plugin.policyengine.RangerAccessResourceImpl;
-import org.apache.ranger.plugin.policyengine.RangerResourceACLs;
+import org.apache.ranger.plugin.policyengine.*;
 import org.apache.ranger.plugin.policyengine.RangerResourceACLs.AccessResult;
-import org.apache.ranger.plugin.policyengine.RangerPolicyEngine;
 import org.apache.ranger.plugin.policyevaluator.RangerPolicyEvaluator;
 import org.apache.ranger.plugin.service.RangerBasePlugin;
 import org.apache.ranger.plugin.util.GrantRevokeRequest;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
-import com.google.common.collect.Sets;
-import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcController;
 import org.apache.ranger.plugin.util.RangerPerfTracer;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.security.PrivilegedExceptionAction;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class RangerAuthorizationCoprocessor implements AccessControlService.Interface, RegionCoprocessor, MasterCoprocessor, RegionServerCoprocessor, MasterObserver, RegionObserver, RegionServerObserver, EndpointObserver, BulkLoadObserver, Coprocessor {
 	private static final Log LOG = LogFactory.getLog(RangerAuthorizationCoprocessor.class.getName());
@@ -1335,10 +1329,6 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 		done.run(response);
 	}
 
-	@Override
-	public void hasPermission(RpcController controller, AccessControlProtos.HasPermissionRequest request, RpcCallback<AccessControlProtos.HasPermissionResponse> done) {
-		LOG.debug("hasPermission(): ");
-	}
 
 	@Override
 	public void checkPermissions(RpcController controller, AccessControlProtos.CheckPermissionsRequest request, RpcCallback<AccessControlProtos.CheckPermissionsResponse> done) {
@@ -1402,8 +1392,8 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 					}
 				});
 				if (_userUtils.isSuperUser(user)) {
-					perms.add(new UserPermission(_userUtils.getUserAsString(user),
-					                             Permission.newBuilder(AccessControlLists.ACL_TABLE_NAME).withActions(Action.values()).build()));
+					perms.add(new UserPermission(Bytes.toBytes(_userUtils.getUserAsString(user)),
+							AccessControlLists.ACL_TABLE_NAME, null, Action.values()));
 				}
 			}
 			response = AccessControlUtil.buildGetUserPermissionsResponse(perms);
@@ -1445,11 +1435,11 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 			if (!allowedPermissions.isEmpty()) {
 				UserPermission up = null;
 				if (isNamespace) {
-					up = new UserPermission(user,
-                                                                Permission.newBuilder(resource).withActions(allowedPermissions.toArray(new Action[allowedPermissions.size()])).build());
+					up = new UserPermission(Bytes.toBytes(user), resource,
+							allowedPermissions.toArray(new Action[allowedPermissions.size()]));
 				} else {
-					up = new UserPermission(user,
-                                                                Permission.newBuilder(TableName.valueOf(resource)).withActions(allowedPermissions.toArray(new Action[allowedPermissions.size()])).build());
+					up = new UserPermission(Bytes.toBytes(user), TableName.valueOf(resource), null, null,
+							allowedPermissions.toArray(new Action[allowedPermissions.size()]));
 				}
 				userPermissions.add(up);
 			}
@@ -1461,8 +1451,8 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 		AccessControlProtos.Permission     perm = up == null ? null : up.getPermission();
 
 		UserPermission      userPerm  = up == null ? null : AccessControlUtil.toUserPermission(up);
-		Permission.Action[] actions   = userPerm == null ? null : userPerm.getPermission().getActions();
-		String              userName  = userPerm == null ? null : userPerm.getUser();
+		Permission.Action[] actions   = userPerm == null ? null : userPerm.getActions();
+		String              userName  = userPerm == null ? null : Bytes.toString(userPerm.getUser());
 		String              nameSpace = null;
 		String              tableName = null;
 		String              colFamily = null;
@@ -1486,15 +1476,13 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 			break;
 
 			case Table:
-				TablePermission tablePerm = (TablePermission)userPerm.getPermission();
-				tableName = Bytes.toString(tablePerm.getTableName().getName());
-				colFamily = Bytes.toString(tablePerm.getFamily());
-				qualifier = Bytes.toString(tablePerm.getQualifier());
+				tableName = Bytes.toString(userPerm.getTableName().getName());
+				colFamily = Bytes.toString(userPerm.getFamily());
+				qualifier = Bytes.toString(userPerm.getQualifier());
 			break;
 
 			case Namespace:
-				NamespacePermission namepsacePermission = (NamespacePermission)userPerm.getPermission();
-				nameSpace = namepsacePermission.getNamespace();
+				nameSpace = userPerm.getNamespace();
 			break;
 		}
 		
@@ -1578,7 +1566,7 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 		AccessControlProtos.Permission     perm = up == null ? null : up.getPermission();
 
 		UserPermission      userPerm  = up == null ? null : AccessControlUtil.toUserPermission(up);
-		String              userName  = userPerm == null ? null : userPerm.getUser();
+		String              userName  = userPerm == null ? null : Bytes.toString(userPerm.getUser());
 		String              nameSpace = null;
 		String              tableName = null;
 		String              colFamily = null;
@@ -1598,15 +1586,13 @@ public class RangerAuthorizationCoprocessor implements AccessControlService.Inte
 			break;
 
 			case Table :
-				TablePermission tablePerm = (TablePermission)userPerm.getPermission();
-				tableName = Bytes.toString(tablePerm.getTableName().getName());
-				colFamily = Bytes.toString(tablePerm.getFamily());
-				qualifier = Bytes.toString(tablePerm.getQualifier());
+				tableName = Bytes.toString(userPerm.getTableName().getName());
+				colFamily = Bytes.toString(userPerm.getFamily());
+				qualifier = Bytes.toString(userPerm.getQualifier());
 			break;
 
 			case Namespace:
-				NamespacePermission namespacePermission = (NamespacePermission)userPerm.getPermission();
-				nameSpace = namespacePermission.getNamespace();
+				nameSpace = userPerm.getNamespace();
 			break;
 		}
 

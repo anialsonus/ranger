@@ -17,14 +17,14 @@
 
 package org.apache.ranger.authorization.hbase;
 
+import org.apache.ranger.admin.client.AbstractRangerAdminClient;
+import org.apache.ranger.plugin.util.ServicePolicies;
+import org.apache.ranger.plugin.util.ServiceTags;
+
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.List;
-
-import org.apache.ranger.admin.client.AbstractRangerAdminClient;
-import org.apache.ranger.plugin.util.ServicePolicies;
-import org.apache.ranger.plugin.util.ServiceTags;
 
 /**
  * A test implementation of the RangerAdminClient interface that just reads policies in from a file and returns them

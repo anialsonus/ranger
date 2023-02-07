@@ -19,15 +19,15 @@
 
 package org.apache.ranger.services.hbase.client;
 
+import org.apache.log4j.Logger;
+import org.apache.ranger.plugin.util.TimedEventUtil;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.Logger;
-import org.apache.ranger.plugin.util.TimedEventUtil;
 
 
 public class HBaseConnectionMgr {

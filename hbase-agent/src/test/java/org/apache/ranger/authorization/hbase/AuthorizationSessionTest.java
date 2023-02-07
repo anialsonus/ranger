@@ -19,13 +19,13 @@
 package org.apache.ranger.authorization.hbase;
 
 
-
-import static org.mockito.Mockito.*;
-
 import org.apache.hadoop.hbase.security.User;
 import org.apache.ranger.plugin.service.RangerBasePlugin;
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AuthorizationSessionTest {
 
