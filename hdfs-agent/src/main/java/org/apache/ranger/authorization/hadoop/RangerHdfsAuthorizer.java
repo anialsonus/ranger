@@ -226,19 +226,6 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 		}
 
 		@Override
-		public void checkPermissionWithContext(AuthorizationContext authzContext) throws AccessControlException {
-			checkRangerPermission(authzContext.getFsOwner(), authzContext.getSupergroup(),
-					authzContext.getCallerUgi(), authzContext.getInodeAttrs(),
-					authzContext.getInodes(), authzContext.getPathByNameArr(),
-					authzContext.getSnapshotId(), authzContext.getPath(),
-					authzContext.getAncestorIndex(), authzContext.isDoCheckOwner(),
-					authzContext.getAncestorAccess(), authzContext.getParentAccess(),
-					authzContext.getAccess(), authzContext.getSubAccess(),
-					authzContext.isIgnoreEmptyDir(), authzContext.getOperationName(),
-					authzContext.getCallerContext());
-		}
-
-		@Override
 		public void checkPermission(String fsOwner, String superGroup, UserGroupInformation ugi,
 									INodeAttributes[] inodeAttrs, INode[] inodes, byte[][] pathByNameArr,
 									int snapshotId, String path, int ancestorIndex, boolean doCheckOwner,
