@@ -23,8 +23,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.kylin.common.KylinConfig;
 import org.apache.kylin.common.util.Pair;
 import org.apache.kylin.metadata.project.ProjectInstance;
@@ -43,7 +43,7 @@ import org.springframework.security.acls.model.Permission;
 import com.google.common.collect.Sets;
 
 public class RangerKylinAuthorizer extends ExternalAclProvider {
-	private static final Log LOG = LogFactory.getLog(RangerKylinAuthorizer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerKylinAuthorizer.class);
 
 	private static volatile RangerKylinPlugin kylinPlugin = null;
 

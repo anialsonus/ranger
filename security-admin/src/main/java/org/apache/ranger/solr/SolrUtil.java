@@ -25,7 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.PropertiesUtil;
 import org.apache.ranger.common.RESTErrorUtil;
@@ -46,7 +47,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SolrUtil {
-	private static final Logger logger = Logger.getLogger(SolrUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(SolrUtil.class);
 
 	@Autowired
 	RESTErrorUtil restErrorUtil;

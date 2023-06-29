@@ -27,8 +27,8 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.biz.ServiceDBStore.REMOVE_REF_TYPE;
 import org.apache.ranger.common.ContextUtil;
@@ -58,7 +58,7 @@ import com.google.gson.GsonBuilder;
 
 @Component
 public class RoleDBStore implements RoleStore {
-    private static final Log LOG = LogFactory.getLog(RoleDBStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RoleDBStore.class);
 
     private static final String RANGER_ROLE_GLOBAL_STATE_NAME = "RangerRole";
 

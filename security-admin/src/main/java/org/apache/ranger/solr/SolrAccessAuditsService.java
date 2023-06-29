@@ -23,7 +23,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.AccessAuditsService;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.PropertiesUtil;
@@ -46,7 +47,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Scope("singleton")
 public class SolrAccessAuditsService extends AccessAuditsService {
-	private static final Logger LOGGER = Logger.getLogger(SolrAccessAuditsService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SolrAccessAuditsService.class);
 
 	@Autowired
 	SolrMgr solrMgr;

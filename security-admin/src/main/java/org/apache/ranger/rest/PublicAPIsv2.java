@@ -20,7 +20,8 @@
 package org.apache.ranger.rest;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.admin.client.datatype.RESTResponse;
 import org.apache.ranger.common.RESTErrorUtil;
 import org.apache.ranger.common.annotation.RangerAnnotationJSMgrName;
@@ -53,7 +54,7 @@ import java.util.List;
 @RangerAnnotationJSMgrName("PublicMgr")
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class PublicAPIsv2 {
-	private static final Logger logger = Logger.getLogger(PublicAPIsv2.class);
+	private static final Logger logger = LoggerFactory.getLogger(PublicAPIsv2.class);
 
 	@Autowired
 	ServiceREST serviceREST;

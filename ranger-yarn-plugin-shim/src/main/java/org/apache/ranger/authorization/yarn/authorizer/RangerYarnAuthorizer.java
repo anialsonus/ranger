@@ -22,8 +22,8 @@ package org.apache.ranger.authorization.yarn.authorizer;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
@@ -35,7 +35,7 @@ import org.apache.ranger.plugin.classloader.RangerPluginClassLoader;
 
 
 public class RangerYarnAuthorizer extends YarnAuthorizationProvider {
-	private static final Log LOG  = LogFactory.getLog(RangerYarnAuthorizer.class);
+	private static final Logger LOG  = LoggerFactory.getLogger(RangerYarnAuthorizer.class);
 
 	private static final String   RANGER_PLUGIN_TYPE                      = "yarn";
 	private static final String   RANGER_YARN_AUTHORIZER_IMPL_CLASSNAME   = "org.apache.ranger.authorization.yarn.authorizer.RangerYarnAuthorizer";

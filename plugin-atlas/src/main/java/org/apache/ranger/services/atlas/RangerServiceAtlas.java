@@ -36,8 +36,8 @@ import org.apache.atlas.model.instance.AtlasEntityHeader;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.apache.ranger.plugin.model.RangerPolicy;
@@ -55,7 +55,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 
 public class RangerServiceAtlas extends RangerBaseService {
-	private static final Log LOG = LogFactory.getLog(RangerServiceAtlas.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerServiceAtlas.class);
 
 	public static final String RESOURCE_SERVICE                       = "atlas-service";
 	public static final String RESOURCE_TYPE_CATEGORY                 = "type-category";

@@ -21,8 +21,8 @@ package org.apache.ranger.plugin.conditionevaluator;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.ranger.authorization.utils.JsonUtils;
 import org.apache.ranger.authorization.utils.StringUtil;
@@ -50,7 +50,7 @@ import static org.apache.ranger.plugin.util.RangerCommonConstants.*;
 
 
 public final class RangerScriptExecutionContext {
-	private static final Log LOG = LogFactory.getLog(RangerScriptExecutionContext.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerScriptExecutionContext.class);
 
 	private static final Log    PERF_POLICY_CONDITION_SCRIPT_TOJSON         = RangerPerfTracer.getPerfLogger("policy.condition.script.tojson");
 	private static final String TAG_ATTR_DATE_FORMAT_PROP                   = "ranger.plugin.tag.attr.additional.date.formats";
@@ -527,22 +527,22 @@ public final class RangerScriptExecutionContext {
 	}
 
 	public void logDebug(Object msg) {
-		LOG.debug(msg);
+		LOG.debug(msg.toString());
 	}
 
 	public void logInfo(Object msg) {
-		LOG.info(msg);
+		LOG.info(msg.toString());
 	}
 
 	public void logWarn(Object msg) {
-		LOG.warn(msg);
+		LOG.warn(msg.toString());
 	}
 
 	public void logError(Object msg) {
-		LOG.error(msg);
+		LOG.error(msg.toString());
 	}
 
 	public void logFatal(Object msg) {
-		LOG.fatal(msg);
+		LOG.error(msg.toString());
 	}
 }

@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 public class ColumnIterator implements Iterator<String> {
 	// TODO write tests for this class
 	
-	private static final Log LOG = LogFactory.getLog(ColumnIterator.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(ColumnIterator.class.getName());
 	Iterator<byte[]> _setIterator;
 	Iterator<Cell> _listIterator;
 	

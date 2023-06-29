@@ -20,7 +20,8 @@ package org.apache.ranger.patch;
 import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.entity.XXModuleDef;
 import org.apache.ranger.entity.XXPolicy;
@@ -35,7 +36,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PatchTagModulePermission_J10005 extends BaseLoader {
-	private static final Logger logger = Logger
+	private static final Logger logger = LoggerFactory
 			.getLogger(PatchTagModulePermission_J10005.class);
 
 	@Autowired
@@ -119,8 +120,7 @@ public class PatchTagModulePermission_J10005 extends BaseLoader {
 						}
 					}
 				}catch(Exception ex){
-					logger.info("Error during policy update:"+xXPolicy.toString());
-					logger.error(ex);
+					logger.error("Error during policy update:"+xXPolicy.toString(), ex);
 				}
 			}
 		}

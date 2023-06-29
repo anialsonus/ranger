@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.apache.ranger.plugin.util.JsonUtilsV2;
@@ -42,7 +42,7 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 public class KnoxClient {
 
 	private static final String EXPECTED_MIME_TYPE = "application/json";
-	private static final Log LOG = LogFactory.getLog(KnoxClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(KnoxClient.class);
 
 	private String knoxUrl;
 	private String userName;

@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.kms.server.KMSACLsType;
 import org.apache.hadoop.crypto.key.kms.server.KMSConfiguration;
@@ -56,7 +56,7 @@ import com.google.common.collect.Sets;
 
 public class RangerKmsAuthorizer implements Runnable, KeyACLs {
 	  private static final Logger LOG = LoggerFactory.getLogger(RangerKmsAuthorizer.class);
-	private static final Log PERF_KMSAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("kmsauth.request");
+	private static final Logger PERF_KMSAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("kmsauth.request");
 
 	  private static final String KMS_USER_PRINCIPAL = "ranger.ks.kerberos.principal";
 	  private static final String KMS_USER_KEYTAB = "ranger.ks.kerberos.keytab";

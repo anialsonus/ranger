@@ -23,8 +23,8 @@
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RangerAdminRESTClient extends AbstractRangerAdminClient {
-	private static final Log LOG = LogFactory.getLog(RangerAdminRESTClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerAdminRESTClient.class);
 
 	private String           serviceName;
     private String           serviceNameUrlParam;

@@ -24,7 +24,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.ContextUtil;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.RangerConfigUtil;
@@ -43,7 +44,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Scope("singleton")
 public class UserService extends UserServiceBase<XXPortalUser, VXPortalUser> {
-	private static final Logger logger = Logger.getLogger(UserService.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
 	public static final String NAME = "User";
 

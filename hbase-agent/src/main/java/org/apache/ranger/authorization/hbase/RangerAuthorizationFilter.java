@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.MoreObjects;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.filter.FilterBase;
@@ -35,7 +35,7 @@ import org.apache.ranger.audit.model.AuthzAuditEvent;
 
 public class RangerAuthorizationFilter extends FilterBase {
 
-	private static final Log LOG = LogFactory.getLog(RangerAuthorizationFilter.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(RangerAuthorizationFilter.class.getName());
 	final Set<String> _familiesAccessAllowed;
 	final Set<String> _familiesAccessDenied;
 	final Set<String> _familiesAccessIndeterminate;

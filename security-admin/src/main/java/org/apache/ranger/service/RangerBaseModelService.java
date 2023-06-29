@@ -26,8 +26,8 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.biz.RangerBizUtil;
 import org.apache.ranger.common.ContextUtil;
 import org.apache.ranger.common.DateUtil;
@@ -52,8 +52,7 @@ import org.apache.ranger.plugin.util.SearchFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class RangerBaseModelService<T extends XXDBBase, V extends RangerBaseModelObject> {
-	private static final Log LOG = LogFactory
-			.getLog(RangerBaseModelService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerBaseModelService.class);
 
 	@Autowired
 	protected RangerDaoManager daoMgr;
@@ -103,7 +102,7 @@ public abstract class RangerBaseModelService<T extends XXDBBase, V extends Range
 			tEntityClass = (Class<T>) var[0].getBounds()[0];
 			tViewClass = (Class<V>) var[1].getBounds()[0];
 		} else {
-			LOG.fatal("Cannot find class for template", new Throwable());
+			LOG.error("Cannot find class for template", new Throwable());
 		}
 		
 		if (tEntityClass != null) {

@@ -20,7 +20,7 @@
  package org.apache.ranger.view;
 
 /**
- * Audit Log for Policy Export
+ * Audit Logger for Policy Export
  *
  */
 

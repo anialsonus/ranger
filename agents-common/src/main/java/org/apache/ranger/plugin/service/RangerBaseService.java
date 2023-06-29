@@ -32,8 +32,8 @@ import java.util.TreeSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.SecureClientLogin;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
@@ -49,7 +49,7 @@ import org.apache.ranger.plugin.util.ServiceDefUtil;
 
 
 public abstract class RangerBaseService {
-	private static final Log LOG = LogFactory.getLog(RangerBaseService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerBaseService.class);
 
 	protected static final String ADMIN_USER_PRINCIPAL = "ranger.admin.kerberos.principal";
 	protected static final String ADMIN_USER_KEYTAB    = "ranger.admin.kerberos.keytab";

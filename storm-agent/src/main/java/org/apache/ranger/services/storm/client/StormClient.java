@@ -37,7 +37,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.KrbPasswordSaverLoginModule;
 import org.apache.hadoop.security.SecureClientLogin;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.apache.ranger.plugin.util.PasswordUtils;
@@ -52,7 +53,7 @@ import com.sun.jersey.api.client.WebResource;
 
 public class StormClient {
 
-	private static final Logger LOG = Logger.getLogger(StormClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(StormClient.class);
 
 	private static final String EXPECTED_MIME_TYPE = "application/json";
 

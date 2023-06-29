@@ -19,8 +19,8 @@
 
 package org.apache.ranger.authorization.hive.authorizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -33,7 +33,7 @@ import org.apache.ranger.plugin.classloader.RangerPluginClassLoader;
 
 public class RangerHiveAuthorizerFactory implements HiveAuthorizerFactory {
 	
-	private static final Log LOG  = LogFactory.getLog(RangerHiveAuthorizerFactory.class);
+	private static final Logger LOG  = LoggerFactory.getLogger(RangerHiveAuthorizerFactory.class);
 	
 	private static final String   RANGER_PLUGIN_TYPE                      = "hive";
 	private static final String   RANGER_HIVE_AUTHORIZER_IMPL_CLASSNAME   = "org.apache.ranger.authorization.hive.authorizer.RangerHiveAuthorizerFactory";

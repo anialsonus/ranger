@@ -48,8 +48,8 @@ import javax.security.auth.login.LoginContext;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
@@ -62,7 +62,7 @@ import com.google.gson.GsonBuilder;
 import static org.apache.hadoop.util.PlatformName.IBM_JAVA;
 
 public class MiscUtil {
-	private static final Log logger = LogFactory.getLog(MiscUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(MiscUtil.class);
 
 	public static final String TOKEN_START = "%";
 	public static final String TOKEN_END = "%";
@@ -474,7 +474,7 @@ public class MiscUtil {
 				logger.info("Default UGI before using new Subject:"
 						+ UserGroupInformation.getLoginUser());
 			} catch (Throwable t) {
-				logger.error(t);
+				logger.error("Error:", t);
 			}
 			ugi = UserGroupInformation.getUGIFromSubject(subject);
 			logger.info("SUBJECT.UGI.NAME=" + ugi.getUserName() + ", ugi="
@@ -613,7 +613,7 @@ public class MiscUtil {
 		return Collections.emptySet();
 	}
 
-	static public boolean logErrorMessageByInterval(Log useLogger,
+	static public boolean logErrorMessageByInterval(Logger useLogger,
 			String message) {
 		return logErrorMessageByInterval(useLogger, message, null);
 	}
@@ -623,7 +623,7 @@ public class MiscUtil {
 	 * @param message
 	 * @param e
 	 */
-	static public boolean logErrorMessageByInterval(Log useLogger,
+	static public boolean logErrorMessageByInterval(Logger useLogger,
 			String message, Throwable e) {
         if (message == null) {
             return false;

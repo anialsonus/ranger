@@ -22,7 +22,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.NoResultException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.db.BaseDao;
 import org.apache.ranger.entity.XXAccessAudit;
 import org.apache.ranger.entity.XXAccessAuditV4;
@@ -31,7 +32,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class XXAccessAuditDao extends BaseDao<XXAccessAudit> {
-	private static final Logger logger = Logger.getLogger(XXAccessAuditDao.class);
+	private static final Logger logger = LoggerFactory.getLogger(XXAccessAuditDao.class);
     public XXAccessAuditDao( RangerDaoManagerBase daoManager ) {
 		super(daoManager, "loggingPU");
     }

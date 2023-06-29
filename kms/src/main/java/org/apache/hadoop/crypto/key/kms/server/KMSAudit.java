@@ -207,7 +207,7 @@ public class KMSAudit {
               return new AuditEvent(op, ugi, key, remoteHost, extraMsg);
             }
           });
-          // Log first access (initialized as -1 so
+          // Logger first access (initialized as -1 so
           // incrementAndGet() == 0 implies first access)
           if (event.getAccessCount().incrementAndGet() == 0) {
             event.getAccessCount().incrementAndGet();

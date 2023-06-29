@@ -21,8 +21,8 @@ package org.apache.ranger.rest;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.biz.AssetMgr;
 import org.apache.ranger.biz.RangerBizUtil;
 import org.apache.ranger.biz.ServiceDBStore;
@@ -73,7 +73,7 @@ import java.util.List;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class TagREST {
 
-    private static final Log LOG = LogFactory.getLog(TagREST.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TagREST.class);
     public static final String Allowed_User_List_For_Tag_Download = "tag.download.auth.users";
 
 	@Autowired

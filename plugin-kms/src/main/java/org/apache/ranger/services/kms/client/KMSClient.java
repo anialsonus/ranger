@@ -37,7 +37,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.HadoopKerberosName;
 import org.apache.hadoop.security.ProviderUtils;
 import org.apache.hadoop.security.SecureClientLogin;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.util.PasswordUtils;
 import org.apache.ranger.plugin.client.HadoopException;
@@ -53,7 +54,7 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class KMSClient {
 
-	private static final Logger LOG = Logger.getLogger(KMSClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(KMSClient.class);
 
 	private static final String EXPECTED_MIME_TYPE = "application/json";
 

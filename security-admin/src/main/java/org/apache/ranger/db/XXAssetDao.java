@@ -21,7 +21,8 @@
 
 import javax.persistence.NoResultException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.RangerCommonEnums;
 import org.apache.ranger.common.db.BaseDao;
 import org.apache.ranger.entity.XXAsset;
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class XXAssetDao extends BaseDao<XXAsset> {
-	private static final Logger logger = Logger.getLogger(XXAssetDao.class);
+	private static final Logger logger = LoggerFactory.getLogger(XXAssetDao.class);
 
     public XXAssetDao( RangerDaoManagerBase  daoManager ) {
 		super(daoManager);

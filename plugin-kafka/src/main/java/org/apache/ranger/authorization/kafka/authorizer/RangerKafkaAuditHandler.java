@@ -20,8 +20,8 @@
 
 package org.apache.ranger.authorization.kafka.authorizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.plugin.audit.RangerDefaultAuditHandler;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
@@ -29,7 +29,7 @@ import org.apache.ranger.plugin.policyengine.RangerAccessResourceImpl;
 import org.apache.ranger.plugin.policyengine.RangerAccessResult;
 
 public class RangerKafkaAuditHandler extends RangerDefaultAuditHandler {
-    private static final Log LOG = LogFactory.getLog(RangerKafkaAuditHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerKafkaAuditHandler.class);
 
     private AuthzAuditEvent auditEvent      = null;
 

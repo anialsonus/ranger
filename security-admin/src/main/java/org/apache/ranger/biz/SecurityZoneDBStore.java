@@ -25,8 +25,8 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.RESTErrorUtil;
 import org.apache.ranger.db.RangerDaoManager;
@@ -46,7 +46,7 @@ import com.google.gson.GsonBuilder;
 
 @Component
 public class SecurityZoneDBStore implements SecurityZoneStore {
-    private static final Log LOG = LogFactory.getLog(SecurityZoneDBStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityZoneDBStore.class);
     private static final String RANGER_GLOBAL_STATE_NAME = "RangerSecurityZone";
 
     @Autowired

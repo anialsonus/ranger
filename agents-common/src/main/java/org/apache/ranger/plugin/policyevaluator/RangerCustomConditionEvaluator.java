@@ -21,8 +21,8 @@ package org.apache.ranger.plugin.policyevaluator;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyItemCondition;
 import org.apache.ranger.plugin.conditionevaluator.RangerConditionEvaluator;
 import org.apache.ranger.plugin.model.RangerPolicy;
@@ -37,10 +37,10 @@ import java.util.List;
 
 public class RangerCustomConditionEvaluator {
 
-    private static final Log LOG = LogFactory.getLog(RangerCustomConditionEvaluator.class);
-    private static final Log PERF_POLICY_INIT_LOG = RangerPerfTracer.getPerfLogger("policy.init");
-    private static final Log PERF_POLICYITEM_INIT_LOG = RangerPerfTracer.getPerfLogger("policyitem.init");
-    private static final Log PERF_POLICYCONDITION_INIT_LOG = RangerPerfTracer.getPerfLogger("policycondition.init");
+    private static final Logger LOG = LoggerFactory.getLogger(RangerCustomConditionEvaluator.class);
+    private static final Logger PERF_POLICY_INIT_LOG = RangerPerfTracer.getPerfLogger("policy.init");
+    private static final Logger PERF_POLICYITEM_INIT_LOG = RangerPerfTracer.getPerfLogger("policyitem.init");
+    private static final Logger PERF_POLICYCONDITION_INIT_LOG = RangerPerfTracer.getPerfLogger("policycondition.init");
 
     public List<RangerConditionEvaluator> getRangerPolicyConditionEvaluator(RangerPolicy policy,
                                                                                   RangerServiceDef serviceDef,

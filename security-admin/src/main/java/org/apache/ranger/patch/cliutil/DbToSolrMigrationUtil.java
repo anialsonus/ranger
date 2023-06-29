@@ -29,7 +29,8 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.entity.XXAccessAudit;
 import org.apache.ranger.entity.XXAccessAuditBase;
@@ -62,7 +63,7 @@ import javax.security.auth.login.Configuration;
 
 @Component
 public class DbToSolrMigrationUtil extends BaseLoader {
-	private static final Logger logger = Logger.getLogger(DbToSolrMigrationUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(DbToSolrMigrationUtil.class);
 	private final static String CHECK_FILE_NAME = "migration_check_file.txt";
 	private final static Charset ENCODING = StandardCharsets.UTF_8;
 
@@ -418,7 +419,7 @@ public class DbToSolrMigrationUtil extends BaseLoader {
 						.setDefaultCollection(collectionName);
 				return solrCloudClient;
 			} catch (Exception e) {
-				logger.fatal(
+				logger.error(
 						"Can't connect to Solr server. ZooKeepers="
 								+ zkHosts + ", collection="
 								+ collectionName, e);
@@ -427,7 +428,7 @@ public class DbToSolrMigrationUtil extends BaseLoader {
 		} else {
 			if (solrURL == null || solrURL.isEmpty()
 					|| "none".equalsIgnoreCase(solrURL)) {
-				logger.fatal("Solr ZKHosts and URL for Audit are empty. Please set property "
+				logger.error("Solr ZKHosts and URL for Audit are empty. Please set property "
 						+ SOLR_ZK_HOSTS
 						+ " or "
 						+ SOLR_URLS_PROP);
@@ -445,7 +446,7 @@ public class DbToSolrMigrationUtil extends BaseLoader {
 					solrClient = httpSolrClient;
 
 					} catch (Exception e) {
-					logger.fatal(
+					logger.error(
 							"Can't connect to Solr server. URL="
 									+ solrURL, e);
 					throw e;

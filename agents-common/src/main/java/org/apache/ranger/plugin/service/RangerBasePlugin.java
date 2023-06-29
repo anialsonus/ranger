@@ -23,8 +23,8 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.admin.client.RangerAdminClient;
 import org.apache.ranger.admin.client.RangerAdminRESTClient;
 import org.apache.ranger.audit.provider.AuditHandler;
@@ -55,7 +55,7 @@ import org.apache.ranger.plugin.util.*;
 
 
 public class RangerBasePlugin {
-	private static final Log LOG = LogFactory.getLog(RangerBasePlugin.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerBasePlugin.class);
 
 	private final RangerPluginConfig          pluginConfig;
 	private final RangerPluginContext         pluginContext;

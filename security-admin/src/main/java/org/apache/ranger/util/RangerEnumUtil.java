@@ -28,7 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.view.VEnum;
 import org.apache.ranger.common.view.VEnumElement;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RangerEnumUtil {
 
-    private static final Logger logger = Logger.getLogger(RangerEnumUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(RangerEnumUtil.class);
     public final static String ENUM_CommonEnums_ActiveStatus = "CommonEnums.ActiveStatus";
     public final static String ENUM_CommonEnums_ActivationStatus = "CommonEnums.ActivationStatus";
     public final static String ENUM_CommonEnums_BooleanValue = "CommonEnums.BooleanValue";

@@ -29,7 +29,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.DateUtil;
 import org.apache.ranger.common.MessageEnums;
@@ -58,7 +59,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class XPolicyService extends PublicAPIServiceBase<VXResource, VXPolicy> {
-	Logger logger = Logger.getLogger(XPolicyService.class);
+	Logger logger = LoggerFactory.getLogger(XPolicyService.class);
 
 	@Autowired
 	RESTErrorUtil restErrorUtil;

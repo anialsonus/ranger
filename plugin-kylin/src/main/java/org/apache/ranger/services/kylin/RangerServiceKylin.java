@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.model.RangerService;
 import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.service.RangerBaseService;
@@ -32,7 +32,7 @@ import org.apache.ranger.services.kylin.client.KylinResourceMgr;
 
 public class RangerServiceKylin extends RangerBaseService {
 
-	private static final Log LOG = LogFactory.getLog(RangerServiceKylin.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerServiceKylin.class);
 
 	public RangerServiceKylin() {
 		super();

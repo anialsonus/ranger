@@ -18,8 +18,8 @@
  */
 package org.apache.ranger.audit.provider;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.model.AuditEventBase;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 
@@ -34,7 +34,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 public abstract class BaseAuditHandler implements AuditHandler {
-	private static final Log LOG = LogFactory.getLog(BaseAuditHandler.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BaseAuditHandler.class);
 
 	static final String AUDIT_LOG_FAILURE_REPORT_MIN_INTERVAL_PROP = "xasecure.audit.log.failure.report.min.interval.ms";
 
@@ -312,7 +312,7 @@ public abstract class BaseAuditHandler implements AuditHandler {
 				finalPath = ", finalDestination=" + tFinalPath;
 			}
 
-			String msg = "Audit Status Log: name="
+			String msg = "Audit Status Logger: name="
 					+ getName()
 					+ finalPath
 					+ ", interval="

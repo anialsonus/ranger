@@ -26,8 +26,8 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
 import org.codehaus.jackson.JsonNode;
@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class NiFiClient {
 
-    private static final Log LOG = LogFactory.getLog(NiFiClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NiFiClient.class);
 
     static final String SUCCESS_MSG = "ConnectionTest Successful";
     static final String FAILURE_MSG = "Unable to retrieve any resources using given parameters. ";

@@ -22,7 +22,8 @@
  */
 package org.apache.ranger.biz;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.RESTErrorUtil;
 import org.apache.ranger.common.RangerConstants;
@@ -34,7 +35,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public abstract class BaseMgr {
-    static final Logger logger = Logger.getLogger(BaseMgr.class);
+    static final Logger logger = LoggerFactory.getLogger(BaseMgr.class);
 
     @Autowired
     RangerDaoManager daoManager;

@@ -25,8 +25,8 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
@@ -74,7 +74,7 @@ import org.junit.Test;
 @org.junit.Ignore
 public class HBaseRangerAuthorizationTest {
 
-    private static final Log LOG = LogFactory.getLog(HBaseRangerAuthorizationTest.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(HBaseRangerAuthorizationTest.class.getName());
 
     private static int port;
     private static HBaseTestingUtility utility;

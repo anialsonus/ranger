@@ -30,12 +30,12 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 
 public class RangerTimeOfDayMatcher extends RangerAbstractConditionEvaluator {
-	private static final Log LOG = LogFactory.getLog(RangerTimeOfDayMatcher.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerTimeOfDayMatcher.class);
 	boolean _allowAny;
 	List<int[]> _durations = new ArrayList<>();
 	

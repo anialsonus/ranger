@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.model.AuditEventBase;
 import org.apache.ranger.audit.provider.AuditWriterFactory;
 import org.apache.ranger.audit.provider.MiscUtil;
@@ -38,8 +38,7 @@ import org.apache.ranger.audit.utils.RangerAuditWriter;
  * This class write the logs to local file
  */
 public class HDFSAuditDestination extends AuditDestination {
-	private static final Log logger = LogFactory
-			.getLog(HDFSAuditDestination.class);
+	private static final Logger logger = LoggerFactory.getLogger(HDFSAuditDestination.class);
 
 	private Map<String, String> auditConfigs            = null;
 	private String              auditProviderName       = null;

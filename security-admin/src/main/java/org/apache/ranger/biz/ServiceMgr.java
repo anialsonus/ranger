@@ -31,8 +31,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.SecureClientLogin;
 import org.apache.ranger.common.PropertiesUtil;
 import org.apache.ranger.common.TimedExecutor;
@@ -58,7 +58,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ServiceMgr {
 
-	private static final Log LOG = LogFactory.getLog(ServiceMgr.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceMgr.class);
 	
 	private static final String LOOKUP_PRINCIPAL = "ranger.lookup.kerberos.principal";
 	private static final String LOOKUP_KEYTAB = "ranger.lookup.kerberos.keytab";

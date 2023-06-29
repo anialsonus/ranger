@@ -37,7 +37,8 @@ import javax.security.auth.Subject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.SecureClientLogin;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.client.HadoopConfigHolder;
 import org.apache.ranger.plugin.client.HadoopException;
@@ -61,7 +62,7 @@ import org.apache.solr.common.params.CoreAdminParams.CoreAdminAction;
 import org.apache.solr.common.util.SimpleOrderedMap;
 
 public class ServiceSolrClient {
-	private static final Logger LOG = Logger.getLogger(ServiceSolrClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceSolrClient.class);
 
 	enum RESOURCE_TYPE {
 		COLLECTION, FIELD

@@ -34,9 +34,10 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.utils.JsonUtils;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.biz.ServiceDBStore;
@@ -77,7 +78,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Component
 public class PatchForUpdatingTagsJson_J10020 extends BaseLoader {
 
-    private static final Logger logger = Logger.getLogger(PatchForUpdatingTagsJson_J10020.class);
+    private static final Logger logger = LoggerFactory.getLogger(PatchForUpdatingTagsJson_J10020.class);
 
     @Autowired
     RangerDaoManager daoMgr;
@@ -287,7 +288,7 @@ public class PatchForUpdatingTagsJson_J10020 extends BaseLoader {
     }
 
     private class RangerTagDBRetriever {
-        final Log LOG = LogFactory.getLog(RangerTagDBRetriever.class);
+        final Logger LOG = LoggerFactory.getLogger(RangerTagDBRetriever.class);
 
         private final RangerDaoManager                 daoMgr;
         private final XXService                        xService;

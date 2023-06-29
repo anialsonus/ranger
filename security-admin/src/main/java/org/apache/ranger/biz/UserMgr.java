@@ -32,7 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.ContextUtil;
@@ -75,7 +76,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class UserMgr {
 
-	private static final Logger logger = Logger.getLogger(UserMgr.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserMgr.class);
 	@Autowired
 	RangerDaoManager daoManager;
 

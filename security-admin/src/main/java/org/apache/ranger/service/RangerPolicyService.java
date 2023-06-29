@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.biz.RangerPolicyRetriever;
 import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.JSONUtil;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Scope("singleton")
 public class RangerPolicyService extends RangerPolicyServiceBase<XXPolicy, RangerPolicy> {
-	private static final Log logger = LogFactory.getLog(RangerPolicyService.class);
+	private static final Logger logger = LoggerFactory.getLogger(RangerPolicyService.class);
 
 	@Autowired
 	JSONUtil jsonUtil;

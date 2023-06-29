@@ -36,8 +36,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.knox.gateway.filter.AbstractGatewayFilter;
 import org.apache.knox.gateway.security.GroupPrincipal;
 import org.apache.knox.gateway.security.ImpersonatedPrincipal;
@@ -50,9 +50,9 @@ import org.apache.ranger.plugin.util.RangerPerfTracer;
 
 public class RangerPDPKnoxFilter implements Filter {
 
-	private static final Log LOG = LogFactory.getLog(RangerPDPKnoxFilter.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerPDPKnoxFilter.class);
 
-	private static final Log PERF_KNOXAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("knoxauth.request");
+	private static final Logger PERF_KNOXAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("knoxauth.request");
 
 	private static final String KNOX_GATEWAY_JASS_CONFIG_SECTION = "com.sun.security.jgss.initiate";
 

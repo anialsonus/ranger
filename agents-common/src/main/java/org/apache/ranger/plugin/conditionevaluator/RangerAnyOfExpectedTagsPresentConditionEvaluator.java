@@ -19,8 +19,8 @@
 
 package org.apache.ranger.plugin.conditionevaluator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 
 import java.util.Collections;
@@ -31,7 +31,7 @@ import java.util.Set;
 
 public class RangerAnyOfExpectedTagsPresentConditionEvaluator extends RangerAbstractConditionEvaluator {
 
-	private static final Log LOG = LogFactory.getLog(RangerAnyOfExpectedTagsPresentConditionEvaluator.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerAnyOfExpectedTagsPresentConditionEvaluator.class);
 
 	private final Set<String> policyConditionTags = new HashSet<>();
 

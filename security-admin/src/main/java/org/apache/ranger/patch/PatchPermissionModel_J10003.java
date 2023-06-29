@@ -26,7 +26,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.entity.XXPortalUser;
 import org.apache.ranger.service.XPortalUserService;
@@ -40,7 +41,7 @@ import org.springframework.util.CollectionUtils;
 
 @Component
 public class PatchPermissionModel_J10003 extends BaseLoader {
-	private static final Logger logger = Logger
+	private static final Logger logger = LoggerFactory
 			.getLogger(PatchPermissionModel_J10003.class);
 
 	@Autowired

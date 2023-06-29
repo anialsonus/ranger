@@ -24,8 +24,8 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.conditionevaluator.RangerAbstractConditionEvaluator;
 import org.apache.ranger.plugin.conditionevaluator.RangerConditionEvaluator;
 import org.apache.ranger.plugin.model.RangerPolicy;
@@ -44,10 +44,10 @@ import org.apache.ranger.plugin.util.RangerPerfTracer;
 
 
 public class RangerDefaultPolicyItemEvaluator extends RangerAbstractPolicyItemEvaluator {
-	private static final Log LOG = LogFactory.getLog(RangerDefaultPolicyItemEvaluator.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerDefaultPolicyItemEvaluator.class);
 
-	private static final Log PERF_POLICYITEM_REQUEST_LOG = RangerPerfTracer.getPerfLogger("policyitem.request");
-	private static final Log PERF_POLICYCONDITION_REQUEST_LOG = RangerPerfTracer.getPerfLogger("policycondition.request");
+	private static final Logger PERF_POLICYITEM_REQUEST_LOG = RangerPerfTracer.getPerfLogger("policyitem.request");
+	private static final Logger PERF_POLICYCONDITION_REQUEST_LOG = RangerPerfTracer.getPerfLogger("policycondition.request");
 
 	private boolean hasCurrentUser;
 	private boolean hasResourceOwner;

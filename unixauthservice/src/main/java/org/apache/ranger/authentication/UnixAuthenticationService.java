@@ -44,7 +44,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.ranger.credentialapi.CredentialReader;
 import org.apache.ranger.plugin.util.XMLUtils;
@@ -54,7 +55,7 @@ import org.apache.ranger.usergroupsync.UserSyncMetricsProducer;
 
 public class UnixAuthenticationService {
 
-	private static final Logger LOG = Logger.getLogger(UnixAuthenticationService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UnixAuthenticationService.class);
 
 	private static final String serviceName = "UnixAuthenticationService";
 

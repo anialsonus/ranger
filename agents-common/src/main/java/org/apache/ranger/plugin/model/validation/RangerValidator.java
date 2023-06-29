@@ -31,8 +31,8 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.errors.ValidationErrorCode;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyResource;
@@ -51,7 +51,7 @@ import org.apache.ranger.plugin.util.RangerObjectFactory;
 
 public abstract class RangerValidator {
 	
-	private static final Log LOG = LogFactory.getLog(RangerValidator.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerValidator.class);
 
 	RoleStore 	 _roleStore;
 	ServiceStore _store;

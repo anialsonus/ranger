@@ -20,8 +20,8 @@
 package org.apache.ranger.plugin.contextenricher;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 
 import java.util.Map;
@@ -53,7 +53,7 @@ import java.util.Properties;
  @see <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)">Java Properties List</a>
  */
 public class RangerSampleProjectProvider extends RangerAbstractContextEnricher {
-	private static final Log LOG = LogFactory.getLog(RangerSampleProjectProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerSampleProjectProvider.class);
 
 	private String     contextName    = "PROJECT";
 	private Properties userProjectMap = null;

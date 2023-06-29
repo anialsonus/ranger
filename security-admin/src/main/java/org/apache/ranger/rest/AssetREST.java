@@ -40,7 +40,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.admin.client.datatype.RESTResponse;
 import org.apache.ranger.biz.AssetMgr;
 import org.apache.ranger.biz.RangerBizUtil;
@@ -82,7 +83,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RangerAnnotationJSMgrName("AssetMgr")
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class AssetREST {
-	private static final Logger logger = Logger.getLogger(AssetREST.class);
+	private static final Logger logger = LoggerFactory.getLogger(AssetREST.class);
 
 	@Autowired
 	RangerSearchUtil searchUtil;

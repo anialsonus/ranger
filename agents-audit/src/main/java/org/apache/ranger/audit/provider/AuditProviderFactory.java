@@ -26,8 +26,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.ranger.audit.destination.*;
 import org.apache.ranger.audit.provider.hdfs.HdfsAuditProvider;
@@ -47,8 +47,7 @@ import org.apache.ranger.audit.queue.AuditSummaryQueue;
  */
 
 public class AuditProviderFactory {
-	private static final Log LOG = LogFactory
-			.getLog(AuditProviderFactory.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AuditProviderFactory.class);
 
 	public static final String AUDIT_IS_ENABLED_PROP = "xasecure.audit.is.enabled";
 	public static final String AUDIT_HDFS_IS_ENABLED_PROP = "xasecure.audit.hdfs.is.enabled";
@@ -202,13 +201,13 @@ public class AuditProviderFactory {
 							qProvider.init(props, queuePropPrefix);
 							providers.add(queueProvider);
 						} else {
-							LOG.fatal("Provider queue doesn't extend AuditQueue. Destination="
+							LOG.error("Provider queue doesn't extend AuditQueue. Destination="
 									+ destName
 									+ " can't be created. queueName="
 									+ queueName);
 						}
 					} else {
-						LOG.fatal("Queue provider for destination " + destName
+						LOG.error("Queue provider for destination " + destName
 								+ " can't be created. queueName=" + queueName);
 					}
 				} else {
@@ -408,7 +407,7 @@ public class AuditProviderFactory {
 							.newInstance();
 				}
 			} catch (Exception e) {
-				LOG.fatal("Can't instantiate audit class for providerName="
+				LOG.error("Can't instantiate audit class for providerName="
 						+ providerName + ", className=" + className
 						+ ", propertyPrefix=" + propPrefix, e);
 			}
@@ -436,7 +435,7 @@ public class AuditProviderFactory {
 		}
 		if (provider != null && provider instanceof AuditQueue) {
 			if (consumer == null) {
-				LOG.fatal("consumer can't be null for AuditQueue. queue="
+				LOG.error("consumer can't be null for AuditQueue. queue="
 						+ provider.getName() + ", propertyPrefix=" + propPrefix);
 				provider = null;
 			}

@@ -21,8 +21,8 @@ package org.apache.ranger.plugin.contextenricher;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.utils.JsonUtils;
 import org.apache.ranger.plugin.model.RangerTag;
 import org.apache.ranger.plugin.model.RangerValiditySchedule;
@@ -53,7 +53,7 @@ import java.util.Map;
 // from JSON specification
 
 public class RangerTagForEval implements Serializable {
-    private static final Log LOG = LogFactory.getLog(RangerTagForEval.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerTagForEval.class);
 
     private String                                type;
     private Map<String, String>                   attributes;

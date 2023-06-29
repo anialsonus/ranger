@@ -28,9 +28,9 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.MDC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.apache.ranger.audit.model.AuditEventBase;
 import org.apache.ranger.audit.provider.AuditHandler;
 import org.apache.ranger.audit.provider.MiscUtil;
@@ -39,8 +39,7 @@ import org.apache.ranger.audit.provider.MiscUtil;
  * This is a non-blocking queue with no limit on capacity.
  */
 public class AuditSummaryQueue extends AuditQueue implements Runnable {
-	private static final Log logger = LogFactory
-			.getLog(AuditSummaryQueue.class);
+	private static final Logger logger = LoggerFactory.getLogger(AuditSummaryQueue.class);
 
 	public static final String PROP_SUMMARY_INTERVAL = "summary.interval.ms";
 
@@ -151,7 +150,7 @@ public class AuditSummaryQueue extends AuditQueue implements Runnable {
 			MDC.clear();
 			runLogAudit();
 		} catch (Throwable t) {
-			logger.fatal("Exited thread without abnormaly. queue=" + getName(),
+			logger.error("Exited thread without abnormaly. queue=" + getName(),
 					t);
 		}
 	}

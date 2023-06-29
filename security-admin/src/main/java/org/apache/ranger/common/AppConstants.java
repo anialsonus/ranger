@@ -971,7 +971,7 @@ public class AppConstants extends RangerCommonEnums {
 			return "Access Audit"; //CLASS_TYPE_XA_ACCESS_AUDIT
 		}
 		if( elementValue == 1014 ) {
-			return "Trx Log Attribute"; //CLASS_TYPE_XA_TRANSACTION_LOG_ATTRIBUTE
+			return "Trx Logger Attribute"; //CLASS_TYPE_XA_TRANSACTION_LOG_ATTRIBUTE
 		}
 		if( elementValue == 1015 ) {
 			return "XA AccessType Def"; //CLASS_TYPE_XA_ACCESS_TYPE_DEF

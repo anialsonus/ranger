@@ -19,8 +19,8 @@ package org.apache.ranger.audit.provider.hdfs;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.model.AuditEventBase;
 import org.apache.ranger.audit.provider.BufferedAuditProvider;
 import org.apache.ranger.audit.provider.DebugTracer;
@@ -29,7 +29,7 @@ import org.apache.ranger.audit.provider.Log4jTracer;
 import org.apache.ranger.audit.provider.MiscUtil;
 
 public class HdfsAuditProvider extends BufferedAuditProvider {
-	private static final Log LOG = LogFactory.getLog(HdfsAuditProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(HdfsAuditProvider.class);
 
 	public static final String AUDIT_HDFS_IS_ASYNC_PROP           = "xasecure.audit.hdfs.is.async";
 	public static final String AUDIT_HDFS_MAX_QUEUE_SIZE_PROP     = "xasecure.audit.hdfs.async.max.queue.size";

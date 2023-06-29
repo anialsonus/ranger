@@ -28,12 +28,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.biz.RangerBizUtil;
 
 
 public class SearchCriteria {
-	Logger logger = Logger.getLogger(SearchCriteria.class);
+	Logger logger = LoggerFactory.getLogger(SearchCriteria.class);
 
 	int startIndex = 0;
 	int maxRows = Integer.MAX_VALUE;

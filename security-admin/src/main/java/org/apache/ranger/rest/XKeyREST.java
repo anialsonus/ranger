@@ -29,7 +29,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.biz.KmsKeyMgr;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.RESTErrorUtil;
@@ -56,7 +57,7 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 @RangerAnnotationJSMgrName("KeyMgr")
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class XKeyREST {
-	private static final Logger logger = Logger.getLogger(XKeyREST.class);
+	private static final Logger logger = LoggerFactory.getLogger(XKeyREST.class);
 
 	private static String UNAUTHENTICATED_MSG = "Unauthenticated : Please check the permission in the policy for the user";
 	

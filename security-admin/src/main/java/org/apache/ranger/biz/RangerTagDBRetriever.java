@@ -31,8 +31,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.entity.*;
@@ -45,8 +45,8 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class RangerTagDBRetriever {
-	private static final Log LOG = LogFactory.getLog(RangerTagDBRetriever.class);
-	private static final Log PERF_LOG = RangerPerfTracer.getPerfLogger("db.RangerTagDBRetriever");
+	static final Logger LOG = LoggerFactory.getLogger(RangerTagDBRetriever.class);
+	static final Logger PERF_LOG = RangerPerfTracer.getPerfLogger("db.RangerTagDBRetriever");
 
 	public static final Type subsumedDataType = new TypeToken<List<RangerTagDef.RangerTagAttributeDef>>() {}.getType();
 

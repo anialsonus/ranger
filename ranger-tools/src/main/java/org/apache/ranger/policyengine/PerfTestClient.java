@@ -21,8 +21,8 @@ package org.apache.ranger.policyengine;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.policyengine.*;
 
 import java.io.InputStream;
@@ -34,7 +34,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 public class PerfTestClient extends Thread {
-	static final Log LOG      = LogFactory.getLog(PerfTestClient.class);
+	static final Logger LOG      = LoggerFactory.getLogger(PerfTestClient.class);
 
 	final PerfTestEngine perfTestEngine;
 	final int clientId;

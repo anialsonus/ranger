@@ -28,7 +28,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.JSONUtil;
 import org.apache.ranger.common.PropertiesUtil;
 import org.apache.ranger.util.CLIUtil;
@@ -43,7 +44,7 @@ import org.springframework.security.web.authentication.ExceptionMappingAuthentic
  */
 public class RangerAuthFailureHandler extends
 ExceptionMappingAuthenticationFailureHandler {
-    private static final Logger logger = Logger.getLogger(RangerAuthFailureHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(RangerAuthFailureHandler.class);
 
     String ajaxLoginfailurePage = null;
 

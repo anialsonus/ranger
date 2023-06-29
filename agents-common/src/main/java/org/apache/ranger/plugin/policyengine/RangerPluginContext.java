@@ -20,8 +20,8 @@
 package org.apache.ranger.plugin.policyengine;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.admin.client.RangerAdminClient;
 import org.apache.ranger.admin.client.RangerAdminRESTClient;
 import org.apache.ranger.authorization.hadoop.config.RangerPluginConfig;
@@ -29,7 +29,7 @@ import org.apache.ranger.plugin.service.RangerAuthContext;
 import org.apache.ranger.plugin.service.RangerAuthContextListener;
 
 public class RangerPluginContext {
-	private static final Log LOG = LogFactory.getLog(RangerPluginContext.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerPluginContext.class);
 
 	private final RangerPluginConfig        config;
 	private       RangerAuthContext         authContext;

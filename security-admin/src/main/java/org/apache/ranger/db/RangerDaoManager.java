@@ -24,7 +24,8 @@
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.StringUtil;
 import org.apache.ranger.common.db.RangerTransactionSynchronizationAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RangerDaoManager extends RangerDaoManagerBase {
-	private static final Logger logger = Logger.getLogger(RangerDaoManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(RangerDaoManager.class);
 
 	@PersistenceContext(unitName = "defaultPU")
 	private EntityManager em;

@@ -20,8 +20,8 @@
 package org.apache.ranger.audit.destination;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.model.AuditEventBase;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.audit.provider.MiscUtil;
@@ -71,8 +71,7 @@ import java.util.Optional;
 
 
 public class SolrAuditDestination extends AuditDestination {
-	private static final Log LOG = LogFactory
-			.getLog(SolrAuditDestination.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SolrAuditDestination.class);
 
 	public static final String PROP_SOLR_URLS = "urls";
 	public static final String PROP_SOLR_ZK = "zookeepers";
@@ -181,7 +180,7 @@ public class SolrAuditDestination extends AuditDestination {
 							solrCloudClient.setDefaultCollection(collectionName);
 							me = solrClient = solrCloudClient;
 						} catch (Throwable t) {
-							LOG.fatal("Can't connect to Solr server. ZooKeepers="
+							LOG.error("Can't connect to Solr server. ZooKeepers="
 									+ zkHosts, t);
 						}
 					} else if (solrURLs != null && !solrURLs.isEmpty()) {
@@ -207,7 +206,7 @@ public class SolrAuditDestination extends AuditDestination {
 							}
 							me = solrClient = lbSolrClient;
 						} catch (Throwable t) {
-							LOG.fatal("Can't connect to Solr server. URL="
+							LOG.error("Can't connect to Solr server. URL="
 									+ solrURLs, t);
 						}
 					}

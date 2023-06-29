@@ -70,7 +70,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.crypto.key.KeyProvider.Metadata;
 import org.apache.hadoop.crypto.key.RangerKeyStoreProvider.KeyMetadata;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.entity.XXRangerKeyStore;
 import org.apache.ranger.kms.dao.DaoManager;
 import org.apache.ranger.kms.dao.RangerKMSDao;
@@ -85,7 +86,7 @@ import org.codehaus.jackson.type.TypeReference;
 
 public class RangerKeyStore extends KeyStoreSpi {
 
-    static final Logger logger = Logger.getLogger(RangerKeyStore.class);
+    static final Logger logger = LoggerFactory.getLogger(RangerKeyStore.class);
     private static final String KEY_METADATA = "KeyMetadata";
     private static final String KEY_NAME_VALIDATION = "[a-z,A-Z,0-9](?!.*--)(?!.*__)(?!.*-_)(?!.*_-)[\\w\\-\\_]*";
     private static final Pattern pattern = Pattern.compile(KEY_NAME_VALIDATION);

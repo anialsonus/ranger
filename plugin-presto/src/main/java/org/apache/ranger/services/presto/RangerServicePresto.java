@@ -19,8 +19,8 @@
 package org.apache.ranger.services.presto;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.HadoopConfigHolder;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.apache.ranger.plugin.model.RangerPolicy;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RangerServicePresto extends RangerBaseService {
-  private static final Log LOG = LogFactory.getLog(RangerServicePresto.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RangerServicePresto.class);
 
   public static final String ACCESS_TYPE_SELECT  = "select";
 

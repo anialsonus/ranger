@@ -36,7 +36,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.ContextUtil;
@@ -77,7 +78,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RangerBizUtil {
-	private static final Logger logger = Logger.getLogger(RangerBizUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(RangerBizUtil.class);
 
 	@Autowired
 	RESTErrorUtil restErrorUtil;

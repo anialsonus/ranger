@@ -43,8 +43,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.SecureClientLogin;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.ugsyncutil.util.UgsyncCommonConstants;
 import org.apache.ranger.unixusersync.config.UserGroupSyncConfig;
 import org.apache.ranger.unixusersync.model.GetXGroupListResponse;
@@ -59,7 +59,7 @@ import org.apache.ranger.usergroupsync.UserGroupSink;
 
 public class PolicyMgrUserGroupBuilder extends AbstractUserGroupSource implements UserGroupSink {
 
-	private static final Logger LOG = Logger.getLogger(PolicyMgrUserGroupBuilder.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PolicyMgrUserGroupBuilder.class);
 
 	private static final String AUTHENTICATION_TYPE = "hadoop.security.authentication";
 	private String AUTH_KERBEROS = "kerberos";
@@ -202,9 +202,9 @@ public class PolicyMgrUserGroupBuilder extends AbstractUserGroupSource implement
 			ldapUrl = config.getLdapUrl();
 		}
 
-		if (isMockRun) {
+		/*if (isMockRun) {
 			LOG.setLevel(Level.DEBUG);
-		}
+		}*/
 		sessionId=null;
 		String keyStoreFile =  config.getSSLKeyStorePath();
 		String trustStoreFile = config.getSSLTrustStorePath();

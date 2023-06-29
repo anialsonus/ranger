@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.destination.FileAuditDestination;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.audit.provider.AuditHandler;
@@ -48,7 +48,7 @@ import org.junit.Test;
 
 public class TestAuditQueue {
 
-	private static final Log logger = LogFactory.getLog(TestAuditQueue.class);
+	private static final Logger logger = LoggerFactory.getLogger(TestAuditQueue.class);
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

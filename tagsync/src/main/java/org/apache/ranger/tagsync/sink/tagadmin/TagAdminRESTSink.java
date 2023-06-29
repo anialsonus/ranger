@@ -33,8 +33,8 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ranger.admin.client.datatype.RESTResponse;
 import org.apache.ranger.plugin.util.RangerRESTClient;
@@ -45,7 +45,7 @@ import org.apache.ranger.tagsync.process.TagSyncConfig;
 import com.sun.jersey.api.client.ClientResponse;
 
 public class TagAdminRESTSink implements TagSink, Runnable {
-	private static final Log LOG = LogFactory.getLog(TagAdminRESTSink.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TagAdminRESTSink.class);
 
 	private static final String REST_PREFIX = "/service";
 	private static final String MODULE_PREFIX = "/tags";

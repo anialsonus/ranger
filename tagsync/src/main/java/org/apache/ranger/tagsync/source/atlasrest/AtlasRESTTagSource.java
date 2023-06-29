@@ -41,8 +41,8 @@ import org.apache.atlas.type.AtlasTypeRegistry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ranger.plugin.model.RangerValiditySchedule;
@@ -67,7 +67,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 public class AtlasRESTTagSource extends AbstractTagSource implements Runnable {
-	private static final Log LOG = LogFactory.getLog(AtlasRESTTagSource.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AtlasRESTTagSource.class);
 
     	private static final int REQUESTED_ENTITIES_LIMIT_MAX = 10000;
     	private static final ThreadLocal<DateFormat> DATE_FORMATTER = new ThreadLocal<DateFormat>() {
@@ -218,7 +218,7 @@ public class AtlasRESTTagSource extends AbstractTagSource implements Runnable {
 		if (CollectionUtils.isNotEmpty(rangerAtlasEntities)) {
 			if (LOG.isDebugEnabled()) {
 				for (RangerAtlasEntityWithTags element : rangerAtlasEntities) {
-					LOG.debug(element);
+					LOG.debug(element.toString());
 				}
 			}
 			Map<String, ServiceTags> serviceTagsMap = AtlasNotificationMapper.processAtlasEntities(rangerAtlasEntities);

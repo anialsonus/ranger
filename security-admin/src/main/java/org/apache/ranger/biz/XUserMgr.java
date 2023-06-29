@@ -50,7 +50,8 @@ import org.apache.ranger.service.*;
 import org.apache.ranger.ugsyncutil.model.GroupUserInfo;
 import org.apache.ranger.ugsyncutil.model.UsersGroupRoleAssignments;
 import org.apache.ranger.view.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.db.XXAuditMapDao;
 import org.apache.ranger.db.XXAuthSessionDao;
@@ -163,7 +164,7 @@ public class XUserMgr extends XUserMgrBase {
 	@Qualifier(value = "transactionManager")
 	PlatformTransactionManager txManager;
 
-	static final Logger logger = Logger.getLogger(XUserMgr.class);
+	static final Logger logger = LoggerFactory.getLogger(XUserMgr.class);
 
 	public VXUser getXUserByUserName(String userName) {
 		VXUser vXUser=null;

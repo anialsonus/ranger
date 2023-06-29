@@ -27,12 +27,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyItem;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyItemAccess;
-import org.slf4j.Logger;
 import org.apache.ranger.plugin.model.RangerService;
 import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.service.RangerBaseService;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
 import org.apache.ranger.services.elasticsearch.client.ElasticsearchResourceMgr;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RangerServiceElasticsearch extends RangerBaseService {

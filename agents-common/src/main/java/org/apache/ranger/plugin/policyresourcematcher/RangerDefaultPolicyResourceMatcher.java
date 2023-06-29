@@ -28,8 +28,8 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyResource;
 import org.apache.ranger.plugin.model.RangerServiceDef.RangerResourceDef;
@@ -42,10 +42,10 @@ import org.apache.ranger.plugin.resourcematcher.RangerResourceMatcher;
 import org.apache.ranger.plugin.util.RangerPerfTracer;
 
 public class RangerDefaultPolicyResourceMatcher implements RangerPolicyResourceMatcher {
-    private static final Log LOG = LogFactory.getLog(RangerDefaultPolicyResourceMatcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerDefaultPolicyResourceMatcher.class);
 
-    private static final Log PERF_POLICY_RESOURCE_MATCHER_INIT_LOG = RangerPerfTracer.getPerfLogger("policyresourcematcher.init");
-    private static final Log PERF_POLICY_RESOURCE_MATCHER_MATCH_LOG = RangerPerfTracer.getPerfLogger("policyresourcematcher.match");
+    private static final Logger PERF_POLICY_RESOURCE_MATCHER_INIT_LOG = RangerPerfTracer.getPerfLogger("policyresourcematcher.init");
+    private static final Logger PERF_POLICY_RESOURCE_MATCHER_MATCH_LOG = RangerPerfTracer.getPerfLogger("policyresourcematcher.match");
 
     protected RangerServiceDef                  serviceDef;
     protected int                               policyType;

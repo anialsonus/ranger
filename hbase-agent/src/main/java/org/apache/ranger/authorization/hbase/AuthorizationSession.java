@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.security.AccessDeniedException;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
@@ -41,7 +41,7 @@ import com.google.common.collect.Sets;
 
 public class AuthorizationSession {
 
-	private static final Log LOG = LogFactory.getLog(AuthorizationSession.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(AuthorizationSession.class.getName());
 	// collaborator objects
 	final HbaseFactory _factory = HbaseFactory.getInstance();
 	final HbaseUserUtils _userUtils = _factory.getUserUtils();

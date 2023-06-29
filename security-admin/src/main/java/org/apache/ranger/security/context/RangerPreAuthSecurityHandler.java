@@ -25,7 +25,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.biz.SessionMgr;
 import org.apache.ranger.common.ContextUtil;
 import org.apache.ranger.common.RESTErrorUtil;
@@ -37,7 +38,7 @@ import org.springframework.stereotype.Component;
 
 @Component("rangerPreAuthSecurityHandler")
 public class RangerPreAuthSecurityHandler {
-	Logger logger = Logger.getLogger(RangerPreAuthSecurityHandler.class);
+	Logger logger = LoggerFactory.getLogger(RangerPreAuthSecurityHandler.class);
 
 	@Autowired
 	RangerDaoManager daoManager;

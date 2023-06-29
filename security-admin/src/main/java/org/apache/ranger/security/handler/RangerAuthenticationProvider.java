@@ -29,7 +29,8 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authentication.unix.jaas.RoleUserAuthorityGranter;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.authorization.utils.StringUtil;
@@ -72,7 +73,7 @@ public class RangerAuthenticationProvider implements AuthenticationProvider {
 
 	@Autowired
 	UserMgr userMgr;
-	private static final Logger logger = Logger.getLogger(RangerAuthenticationProvider.class);
+	private static final Logger logger = LoggerFactory.getLogger(RangerAuthenticationProvider.class);
 	private String rangerAuthenticationMethod;
 
 	private LdapAuthenticator authenticator;

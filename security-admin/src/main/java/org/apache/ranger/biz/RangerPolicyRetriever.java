@@ -28,8 +28,8 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.utils.JsonUtils;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.db.RangerDaoManager;
@@ -55,8 +55,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 
 public class RangerPolicyRetriever {
-	static final Log LOG      = LogFactory.getLog(RangerPolicyRetriever.class);
-	static final Log PERF_LOG = RangerPerfTracer.getPerfLogger("db.RangerPolicyRetriever");
+	static final Logger LOG      = LoggerFactory.getLogger(RangerPolicyRetriever.class);
+	static final Logger PERF_LOG = RangerPerfTracer.getPerfLogger("db.RangerPolicyRetriever");
 
 	private final RangerDaoManager  daoMgr;
 	private final LookupCache       lookupCache = new LookupCache();

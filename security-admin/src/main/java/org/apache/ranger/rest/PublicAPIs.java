@@ -19,7 +19,8 @@
 
 package org.apache.ranger.rest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.common.*;
 import org.apache.ranger.common.annotation.RangerAnnotationClassName;
 import org.apache.ranger.common.annotation.RangerAnnotationJSMgrName;
@@ -51,7 +52,7 @@ import java.util.List;
 @RangerAnnotationJSMgrName("PublicMgr")
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class PublicAPIs {
-	private static final Logger logger = Logger.getLogger(PublicAPIs.class);
+	private static final Logger logger = LoggerFactory.getLogger(PublicAPIs.class);
 
 	@Autowired
 	RangerSearchUtil searchUtil;

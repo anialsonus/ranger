@@ -24,7 +24,8 @@ package org.apache.ranger.patch;
 
 import java.text.DecimalFormat;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.common.DateUtil;
 import org.apache.ranger.util.CLIUtil;
@@ -36,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 public abstract class BaseLoader {
-	private static final Logger logger = Logger.getLogger(BaseLoader.class);
+	private static final Logger logger = LoggerFactory.getLogger(BaseLoader.class);
 
     long startTime =  DateUtil.getUTCDate().getTime();
     long lastTime = startTime;

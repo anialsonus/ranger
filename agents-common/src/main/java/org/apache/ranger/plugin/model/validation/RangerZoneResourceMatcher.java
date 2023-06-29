@@ -19,8 +19,8 @@
 
 package org.apache.ranger.plugin.model.validation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.policyresourcematcher.RangerDefaultPolicyResourceMatcher;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RangerZoneResourceMatcher implements RangerPolicyResourceEvaluator {
-    private static final Log LOG = LogFactory.getLog(RangerZoneResourceMatcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerZoneResourceMatcher.class);
 
     private final String                                         securityZoneName;
     private final Map<String, RangerPolicy.RangerPolicyResource> policyResource;

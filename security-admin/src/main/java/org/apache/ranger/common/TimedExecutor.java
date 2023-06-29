@@ -35,7 +35,8 @@ import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -47,7 +48,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 @Scope("singleton")
 public class TimedExecutor {
 
-	private static final Logger LOG = Logger.getLogger(TimedExecutor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TimedExecutor.class);
 
 	@Autowired
 	TimedExecutorConfigurator _configurator;

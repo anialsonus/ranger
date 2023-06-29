@@ -20,8 +20,8 @@
 package org.apache.ranger.services.ozone;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.plugin.client.HadoopException;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerService;
@@ -41,7 +41,7 @@ import java.util.Map;
 
 public class RangerServiceOzone extends RangerBaseService {
 
-    private static final Log LOG = LogFactory.getLog(RangerServiceOzone.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerServiceOzone.class);
     public static final String ACCESS_TYPE_READ  = "read";
     public static final String ACCESS_TYPE_WRITE  = "write";
     public static final String ACCESS_TYPE_CREATE  = "create";

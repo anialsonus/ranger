@@ -20,8 +20,8 @@
 package org.apache.ranger.plugin.contextenricher;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.admin.client.RangerAdminClient;
 import org.apache.ranger.authorization.hadoop.config.RangerPluginConfig;
 import org.apache.ranger.plugin.policyengine.RangerPluginContext;
@@ -31,7 +31,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.Map;
 
 public class RangerAdminTagRetriever extends RangerTagRetriever {
-	private static final Log LOG = LogFactory.getLog(RangerAdminTagRetriever.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerAdminTagRetriever.class);
 
 	private RangerAdminClient adminClient;
 

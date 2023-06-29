@@ -26,8 +26,8 @@ import java.util.Date;
 
 import org.apache.ranger.common.DateUtil;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ranger.audit.provider.MiscUtil;
 import org.apache.ranger.biz.AssetMgr;
 import org.apache.ranger.biz.RangerBizUtil;
@@ -65,7 +65,7 @@ import com.google.gson.GsonBuilder;
 @Component
 public class MetricUtil extends BaseLoader  {
 	
-	private static final Logger logger = Logger.getLogger(MetricUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetricUtil.class);
 	
 	public static String metricType;
 		
@@ -85,7 +85,7 @@ public class MetricUtil extends BaseLoader  {
 	RESTErrorUtil restErrorUtil;
 	
 	public static void main(String[] args) {
-		logger.getRootLogger().setLevel(Level.OFF);
+		//logger.getRootLogger().setLevel(Level.OFF);
 		logger.info("MetricUtil : main()");
 		try {
 			MetricUtil loader = (MetricUtil) CLIUtil.getBean(MetricUtil.class);

@@ -21,8 +21,8 @@ package org.apache.ranger.rest;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ranger.plugin.model.RangerServiceResource;
 import org.apache.ranger.plugin.model.RangerTag;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ServiceTagsProcessor {
-	private static final Log LOG = LogFactory.getLog(ServiceTagsProcessor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceTagsProcessor.class);
 	private static final Log PERF_LOG_ADD_OR_UPDATE = RangerPerfTracer.getPerfLogger("tags.addOrUpdate");
 
 	private final TagStore tagStore;
