@@ -428,7 +428,7 @@ public class RangerSolrAuthorizer extends SearchComponent implements Authorizati
 		if (httpServletRequest == null) {
 			SolrCore solrCore = rb.req.getCore();
 			StringBuilder builder = new StringBuilder("Unable to locate HttpServletRequest");
-			if (solrCore != null && !solrCore.getSolrConfig().getBool("requestDispatcher/requestParsers/@addHttpRequestToContext", true)) {
+			if (solrCore != null && !solrCore.getSolrConfig().get("requestDispatcher/requestParsers/@addHttpRequestToContext").boolAttr(null, true)) {
 				builder.append(", ensure requestDispatcher/requestParsers/@addHttpRequestToContext is set to true in solrconfig.xml");
 			}
 			throw new SolrException(SolrException.ErrorCode.UNAUTHORIZED, builder.toString());
