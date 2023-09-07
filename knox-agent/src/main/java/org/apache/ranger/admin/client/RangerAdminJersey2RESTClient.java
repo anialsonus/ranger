@@ -60,7 +60,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.sun.jersey.api.client.ClientHandlerException;
 
 public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 
@@ -346,7 +345,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 			} catch (ProcessingException e) {
 				LOG.warn("Failed to communicate with Ranger Admin, URL : " + configURLs.get(currentIndex));
 				if (index == configURLs.size() - 1) {
-					throw new ClientHandlerException(
+					throw new ProcessingException(
 							"Failed to communicate with all Ranger Admin's URL's : [ " + configURLs + " ]", e);
 				}
 			}
