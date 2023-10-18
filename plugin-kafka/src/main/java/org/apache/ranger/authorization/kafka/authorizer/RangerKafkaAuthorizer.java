@@ -42,6 +42,7 @@ import org.apache.kafka.common.network.ListenerName;
 import org.apache.kafka.common.resource.ResourceType;
 import org.apache.kafka.common.security.JaasContext;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
+import org.apache.kafka.common.utils.SecurityUtils;
 import org.apache.kafka.server.authorizer.AclCreateResult;
 import org.apache.kafka.server.authorizer.AclDeleteResult;
 import org.apache.kafka.server.authorizer.Action;
@@ -327,6 +328,59 @@ public class RangerKafkaAuthorizer implements Authorizer {
         })
         .collect(Collectors.toList());
   }
+
+    return ret;
+  }
+
+  /**
+   * Check if the caller is authorized to perform the given ACL operation on at least one
+   * resource of the given type.
+   *
+   * Custom authorizer implementations should consider overriding this default implementation because:
+   * 1. The default implementation iterates all AclBindings multiple times, without any caching
+   *    by principal, host, operation, permission types, and resource types. More efficient
+   *    implementations may be added in custom authorizers that directly access cached entries.
+   * 2. The default implementation cannot integrate with any audit logging included in the
+   *    authorizer implementation.
+   * 3. The default implementation does not support any custom authorizer configs or other access
+   *    rules apart from ACLs.
+   *
+   * @param requestContext Request context including request resourceType, security protocol and listener name
+   * @param op             The ACL operation to check
+   * @param resourceType   The resource type to check
+   * @return               Return {@link AuthorizationResult#ALLOWED} if the caller is authorized
+   *                       to perform the given ACL operation on at least one resource of the
+   *                       given type. Return {@link AuthorizationResult#DENIED} otherwise.
+   */
+
+  @Override
+  public AuthorizationResult authorizeByResourceType(AuthorizableRequestContext requestContext, AclOperation op, ResourceType resourceType){
+
+    AuthorizationResult ret = AuthorizationResult.DENIED;
+
+    SecurityUtils.authorizeByResourceTypeCheckArgs(op, resourceType);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("==> RangerKafkaAuthorizer.authorizeByResourceType() requestContext: " + requestContext.toString() + " AclOperation : " + op + " ResourceType : " + resourceType);
+    }
+
+    RangerKafkaCheckAccess rangerKafkaCheckAccess = new RangerKafkaCheckAccess();
+
+    ret =  rangerKafkaCheckAccess.authorizeByResourceType(requestContext, op, resourceType, rangerPlugin, auditHandler);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("<== RangerKafkaAuthorizer.authorizeByResourceType() requestContext: " + requestContext.toString() + " AclOperation : " + op + " ResourceType : " + resourceType + "AuthorizationResult : " + ret);
+    }
+
+    return ret;
+  }
+
+  /**
+   * Returns the List of Acls from Ranger for the give AclBinding Filters
+   * @param filter AclBindingFilters
+   * @return       Return {@link Iterable<AclBinding>}
+   *
+   */
 
   @Override
   public Iterable<AclBinding> acls(AclBindingFilter filter) {
