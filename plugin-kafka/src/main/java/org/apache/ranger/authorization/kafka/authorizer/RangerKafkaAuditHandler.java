@@ -21,6 +21,7 @@
 package org.apache.ranger.authorization.kafka.authorizer;
 
 import org.apache.ranger.audit.model.AuthzAuditEvent;
+import org.apache.ranger.authorization.kafka.authorizer.utils.RangerKafkaUtils;
 import org.apache.ranger.plugin.audit.RangerDefaultAuditHandler;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 import org.apache.ranger.plugin.policyengine.RangerAccessResourceImpl;
@@ -51,9 +52,9 @@ public class RangerKafkaAuditHandler extends RangerDefaultAuditHandler {
         boolean 			    isAllowed = result.getIsAllowed();
         RangerAccessRequest request = result.getAccessRequest();
         RangerAccessResourceImpl resource = (RangerAccessResourceImpl) request.getResource();
-        String resourceName 			  = (String) resource.getValue(RangerKafkaAuthorizer.KEY_CLUSTER);
+        String resourceName 			  = (String) resource.getValue(RangerKafkaUtils.KEY_CLUSTER);
         if (resourceName != null) {
-            if (request.getAccessType().equalsIgnoreCase(RangerKafkaAuthorizer.ACCESS_TYPE_CREATE) && !isAllowed) {
+            if (request.getAccessType().equalsIgnoreCase(RangerKafkaUtils.ACCESS_TYPE_CREATE) && !isAllowed) {
                 ret = false;
             }
         }
@@ -62,13 +63,13 @@ public class RangerKafkaAuditHandler extends RangerDefaultAuditHandler {
 
     public void flushAudit() {
         if(LOG.isDebugEnabled()) {
-            LOG.info("==> RangerYarnAuditHandler.flushAudit(" + "AuditEvent: " + auditEvent + ")");
+            LOG.info("==> RangerKafkaAuditHandler.flushAudit(" + "AuditEvent: " + auditEvent + ")");
         }
         if (auditEvent != null) {
             super.logAuthzAudit(auditEvent);
         }
         if(LOG.isDebugEnabled()) {
-            LOG.info("<== RangerYarnAuditHandler.flushAudit(" + "AuditEvent: " + auditEvent + ")");
+            LOG.info("<== RangerKafkaAuditHandler.flushAudit(" + "AuditEvent: " + auditEvent + ")");
         }
     }
 }
