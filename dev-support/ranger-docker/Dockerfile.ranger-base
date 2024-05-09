@@ -30,6 +30,7 @@ ENV RANGER_DIST    /home/ranger/dist
 ENV RANGER_SCRIPTS /home/ranger/scripts
 ENV RANGER_HOME    /opt/ranger
 ENV PATH           /usr/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV RANGER_BASE_JAVA_VERSION ${RANGER_BASE_JAVA_VERSION}
 
 
 # setup groups, users, directories

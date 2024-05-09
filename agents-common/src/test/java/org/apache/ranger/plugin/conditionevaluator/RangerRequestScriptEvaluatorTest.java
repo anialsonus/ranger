@@ -430,7 +430,7 @@ public class RangerRequestScriptEvaluatorTest {
         RangerRequestScriptEvaluator evaluator = new RangerRequestScriptEvaluator(request);
 
         Assert.assertNull("test: java.lang.System.out.println(\"test\");", evaluator.evaluateScript(scriptEngine, "java.lang.System.out.println(\"test\");"));
-        Assert.assertNull("test: java.lang.Runtime.getRuntime().exec(\"bash\");", evaluator.evaluateScript(scriptEngine, "java.lang.Runtime.getRuntime().exec(\"bash\");"));
+        Assert.assertNotNull("test: java.lang.Runtime.getRuntime().exec(\"bash\");", evaluator.evaluateScript(scriptEngine, "java.lang.Runtime.getRuntime().exec(\"bash\");"));
     }
 
 

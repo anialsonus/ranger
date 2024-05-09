@@ -69,6 +69,12 @@
           <include>com.kstruct:gethostname4j:jar:${kstruct.gethostname4j.version}</include>
           <include>net.java.dev.jna:jna:jar:${jna.version}</include>
           <include>net.java.dev.jna:jna-platform:jar:${jna-platform.version}</include>
+          <include>org.graalvm.js:js:jar:${graalvm.version}</include>
+          <include>org.graalvm.js:js-scriptengine:jar:${graalvm.version}</include>
+          <include>org.graalvm.regex:regex:jar:${graalvm.version}</include>
+          <include>org.graalvm.sdk:graal-sdk:jar:${graalvm.version}</include>
+          <include>org.graalvm.truffle:truffle-api:jar:${graalvm.version}</include>
+          <include>com.ibm.icu:icu4j</include>
         </includes>
       </binaries>
     </moduleSet>
