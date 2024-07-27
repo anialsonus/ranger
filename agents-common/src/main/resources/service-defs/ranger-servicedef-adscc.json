@@ -210,6 +210,27 @@
       "type": "string",
       "mandatory": true,
       "label": "Host and port adscc server (http://localhost:8888)"
+    },
+    {
+      "itemId": 4,
+      "name": "ssl_truststore",
+      "type": "string",
+      "mandatory": false,
+      "label": "SSL truststore"
+    },
+    {
+      "itemId": 5,
+      "name": "ssl_truststore_type",
+      "type": "string",
+      "mandatory": false,
+      "label": "SSL truststore type"
+    },
+    {
+      "itemId": 6,
+      "name": "ssl_truststore_password",
+      "type": "string",
+      "mandatory": false,
+      "label": "SSL truststore password"
     }
   ],
   "enums": [

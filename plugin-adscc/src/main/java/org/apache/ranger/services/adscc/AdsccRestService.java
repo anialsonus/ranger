@@ -9,6 +9,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.log4j.Logger;
+import org.apache.ranger.plugin.util.PasswordUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,8 +38,8 @@ public class AdsccRestService {
     }
 
     public int getStatusCode(final String url,
-                         final String username,
-                         final String password) {
+                             final String username,
+                             final String password) {
         try {
             return getResponse(url, username, password).getStatusLine().getStatusCode();
         } catch (Exception e) {
@@ -53,9 +54,18 @@ public class AdsccRestService {
                                      final String password) throws IOException {
         HttpUriRequest request = new HttpGet(url);
         request.addHeader(HttpHeaders.ACCEPT, "application/json");
+        String pass = Optional.ofNullable(password).map(this::getPassword).orElse("");
         Optional.ofNullable(username)
-                .map(value -> "Basic " + Base64.getEncoder().encodeToString((username + ":" + Optional.ofNullable(password).orElse("")).getBytes()))
+                .map(value -> "Basic " + Base64.getEncoder().encodeToString((username + ":" + pass).getBytes()))
                 .ifPresent(auth -> request.addHeader(HttpHeaders.AUTHORIZATION, auth));
         return httpClient.execute(request);
+    }
+
+    private String getPassword(final String password) {
+        try {
+            return PasswordUtils.decryptPassword(password);
+        } catch (IOException e) {
+            return password;
+        }
     }
 }
