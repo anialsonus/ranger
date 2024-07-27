@@ -51,13 +51,18 @@ public class RangerServiceAdscc extends RangerBaseService {
                                 configs.get(PASSWORD_CONFIG)))
                         .orElse(404);
                 if (statusCode == 400) {
-                    result.put(HOST_CONFIG, "Wrong hostname");
+                    result.put("connectivityStatus", false);
+                    result.put("message", "Wrong hostname");
                 } else if (statusCode == 401) {
-                    result.put(HOST_CONFIG, "Wrong username or password");
+                    result.put("connectivityStatus", false);
+                    result.put("message", "Wrong username or password");
+                } else {
+                    result.put("connectivityStatus", true);
                 }
             }
         } catch (Exception e) {
-            result.put(HOST_CONFIG, "Wrong hostname");
+            result.put("connectivityStatus", false);
+            result.put("message", "Wrong hostname");
         }
         return result;
     }
