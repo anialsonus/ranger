@@ -7,13 +7,13 @@ import java.util.function.Function;
 
 public enum AdsccEntityEnum {
     CLUSTER(resources -> Optional.of("/api/v1/clusters"), jsonElement -> iterate(jsonElement, "name")),
-    BROKER(resources -> getResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/brokers"),
+    BROKER(resources -> getParentResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/brokers"),
             jsonElement -> iterate(jsonElement.getAsJsonObject().getAsJsonArray("brokers"), "id")),
-    TOPIC(resources -> getResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/topics"),
+    TOPIC(resources -> getParentResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/topics"),
             jsonElement -> iterate(jsonElement.getAsJsonObject().getAsJsonArray("topics"), "name")),
-    CONSUMER_GROUP(resources -> getResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/consumerGroups"),
+    CONSUMER_GROUP(resources -> getParentResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/consumerGroups"),
             jsonElement -> iterate(jsonElement.getAsJsonObject().getAsJsonArray("consumerGroups"), "id")),
-    CONNECT(resources -> getResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/connectClusters"),
+    CONNECT(resources -> getParentResourceValue(resources.get(CLUSTER.name().toLowerCase())).map(cluster -> "/api/v1/cluster/" + cluster + "/connectClusters"),
             jsonElement -> iterate(jsonElement, "name"));
 
 
@@ -42,9 +42,11 @@ public enum AdsccEntityEnum {
         return result;
     }
 
-    private static Optional<String> getResourceValue(final List<String> values) {
+    private static Optional<String> getParentResourceValue(final List<String> values) {
         return Optional.ofNullable(values)
                 .filter(list -> !list.isEmpty())
-                .map(list -> list.get(0));
+                .map(list -> list.get(0))
+                .map(String::trim)
+                .filter(value -> !"*".equals(value));
     }
 }
