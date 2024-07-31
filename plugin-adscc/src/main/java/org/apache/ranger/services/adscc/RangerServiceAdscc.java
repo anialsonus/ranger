@@ -1,6 +1,5 @@
 package org.apache.ranger.services.adscc;
 
-import com.google.gson.JsonParser;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
@@ -41,7 +40,7 @@ public class RangerServiceAdscc extends RangerBaseService {
     @Override
     public void init(final RangerServiceDef serviceDef, final RangerService service) {
         super.init(serviceDef, service);
-        adsccRestService = new AdsccRestService(getHttpClient(), new JsonParser());
+        adsccRestService = new AdsccRestService(getHttpClient());
         rangerAdsccLookupService = new RangerAdsccLookupService(adsccRestService);
     }
 

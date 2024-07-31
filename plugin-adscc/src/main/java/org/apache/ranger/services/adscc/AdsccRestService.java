@@ -19,18 +19,16 @@ import java.util.Optional;
 public class AdsccRestService {
     private static final Logger logger = Logger.getLogger(AdsccRestService.class);
     private final HttpClient httpClient;
-    private final JsonParser jsonParser;
 
-    public AdsccRestService(final HttpClient httpClient, final JsonParser jsonParser) {
+    public AdsccRestService(final HttpClient httpClient) {
         this.httpClient = httpClient;
-        this.jsonParser = jsonParser;
     }
 
     public Optional<JsonElement> execute(final String url,
                                          final String username,
                                          final String password) {
         try {
-            return Optional.ofNullable(jsonParser.parse(IOUtils.toString(getResponse(url, username, password).getEntity().getContent(), StandardCharsets.UTF_8)));
+            return Optional.ofNullable(JsonParser.parseString(IOUtils.toString(getResponse(url, username, password).getEntity().getContent(), StandardCharsets.UTF_8)));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Optional.empty();
