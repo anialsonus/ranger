@@ -4,6 +4,8 @@ import com.google.gson.JsonParser;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
+import org.apache.ranger.plugin.model.RangerService;
+import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.service.RangerBaseService;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
 
@@ -29,11 +31,16 @@ public class RangerServiceAdscc extends RangerBaseService {
     private static final String SSL_TRUSTSTORE_PASSWORD_CONFIG = "ssl_truststore_password";
 
 
-    private final AdsccRestService adsccRestService;
-    private final RangerAdsccLookupService rangerAdsccLookupService;
+    private AdsccRestService adsccRestService;
+    private RangerAdsccLookupService rangerAdsccLookupService;
 
     public RangerServiceAdscc() {
         super();
+    }
+
+    @Override
+    public void init(final RangerServiceDef serviceDef, final RangerService service) {
+        super.init(serviceDef, service);
         adsccRestService = new AdsccRestService(getHttpClient(), new JsonParser());
         rangerAdsccLookupService = new RangerAdsccLookupService(adsccRestService);
     }

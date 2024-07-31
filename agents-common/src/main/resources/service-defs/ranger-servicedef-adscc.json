@@ -24,7 +24,7 @@
       },
       "validationRegEx": "",
       "validationMessage": "",
-      "uiHint": "",
+      "uiHint":"{ \"singleValue\":true }",
       "label": "Cluster name",
       "description": "Cluster name",
       "accessTypeRestrictions": [
