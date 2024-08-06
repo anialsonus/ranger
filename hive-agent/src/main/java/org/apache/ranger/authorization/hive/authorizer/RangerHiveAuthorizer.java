@@ -1683,368 +1683,374 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		if (hiveObjectType == HiveObjectType.URI && !isInput ) {
 			accessType = HiveAccessType.WRITE;
 			return accessType;
-		}
-
-		switch(objectActionType) {
-			case INSERT:
-			case INSERT_OVERWRITE:
-			case UPDATE:
-			case DELETE:
-				accessType = HiveAccessType.UPDATE;
-			break;
-			case OTHER:
-			switch(hiveOpType) {
-				case CREATEDATABASE:
-					if(hiveObj.getType() == HivePrivilegeObjectType.DATABASE) {
-						accessType = HiveAccessType.CREATE;
-					}
-				break;
-
-				case CREATEFUNCTION:
-					if(hiveObj.getType() == HivePrivilegeObjectType.FUNCTION) {
-						accessType = HiveAccessType.CREATE;
-					}
-					if(hiveObjectType == HiveObjectType.GLOBAL ) {
-						accessType = HiveAccessType.TEMPUDFADMIN;
-					}
-				break;
-
-				case CREATETABLE:
-				case CREATEVIEW:
-				case CREATETABLE_AS_SELECT:
-				case CREATE_MATERIALIZED_VIEW:
-					if(hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW) {
-						accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.CREATE;
-					}
-				break;
-				case ALTERVIEW_AS:
-					if (hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW) {
-						accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.ALTER;
-					} else if (hiveObj.getType() == HivePrivilegeObjectType.DATABASE) {
-						accessType = HiveAccessType.SELECT;
-					}
-				break;
-				case ALTERDATABASE:
-				case ALTERDATABASE_LOCATION:
-				case ALTERDATABASE_OWNER:
-				case ALTERPARTITION_BUCKETNUM:
-				case ALTERPARTITION_FILEFORMAT:
-				case ALTERPARTITION_LOCATION:
-				case ALTERPARTITION_MERGEFILES:
-				case ALTERPARTITION_PROTECTMODE:
-				case ALTERPARTITION_SERDEPROPERTIES:
-				case ALTERPARTITION_SERIALIZER:
-				case ALTERTABLE_ADDCOLS:
-				case ALTERTABLE_ADDPARTS:
-				case ALTERTABLE_ARCHIVE:
-				case ALTERTABLE_BUCKETNUM:
-				case ALTERTABLE_CLUSTER_SORT:
-				case ALTERTABLE_COMPACT:
-				case ALTERTABLE_DROPPARTS:
-				case ALTERTABLE_DROPCONSTRAINT:
-				case ALTERTABLE_ADDCONSTRAINT:
-				case ALTERTABLE_FILEFORMAT:
-				case ALTERTABLE_LOCATION:
-				case ALTERTABLE_MERGEFILES:
-				case ALTERTABLE_PARTCOLTYPE:
-				case ALTERTABLE_PROPERTIES:
-				case ALTERTABLE_PROTECTMODE:
-				case ALTERTABLE_RENAME:
-				case ALTERTABLE_RENAMECOL:
-				case ALTERTABLE_RENAMEPART:
-				case ALTERTABLE_REPLACECOLS:
-				case ALTERTABLE_SERDEPROPERTIES:
-				case ALTERTABLE_SERIALIZER:
-				case ALTERTABLE_SKEWED:
-				case ALTERTABLE_TOUCH:
-				case ALTERTABLE_UNARCHIVE:
-				case ALTERTABLE_UPDATEPARTSTATS:
-				case ALTERTABLE_UPDATETABLESTATS:
-				case ALTERTABLE_UPDATECOLUMNS:
-				case ALTERTBLPART_SKEWED_LOCATION:
-				case ALTERVIEW_PROPERTIES:
-				case ALTERVIEW_RENAME:
-				case ALTER_MATERIALIZED_VIEW_REWRITE:
-				case MSCK:
-					accessType = HiveAccessType.ALTER;
-				break;
-
-				case DROPFUNCTION:
-				case DROPTABLE:
-				case DROPVIEW:
-				case DROP_MATERIALIZED_VIEW:
-				case DROPDATABASE:
-					accessType = HiveAccessType.DROP;
-				break;
-
-				case IMPORT:
-					/*
-					This can happen during hive IMPORT command IFF a table is also being created as part of IMPORT.
-					If so then
-					- this would appear in the outputHObjs, i.e. accessType == false
-					- user then must have CREATE permission on the database
-
-					During IMPORT command it is not possible for a database to be in inputHObj list. Thus returning SELECT
-					when accessType==true is never expected to be hit in practice.
-					 */
-					accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.CREATE;
+		} else {
+			switch (objectActionType) {
+				case INSERT:
+				case INSERT_OVERWRITE:
+				case UPDATE:
+				case DELETE:
+					accessType = HiveAccessType.UPDATE;
 					break;
+				case OTHER:
+					switch (hiveOpType) {
+						case CREATETABLE:
+						case CREATEVIEW:
+						case CREATETABLE_AS_SELECT:
+						case CREATE_MATERIALIZED_VIEW:
+							if (hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW) {
+								accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.CREATE;
+							} else if (hiveObj.getType() == HivePrivilegeObjectType.STORAGEHANDLER_URI) {
+								accessType = HiveAccessType.RWSTORAGE;
+							}
+							break;
+						case CREATEFUNCTION:
+							if (hiveObj.getType() == HivePrivilegeObjectType.FUNCTION) {
+								accessType = HiveAccessType.CREATE;
+							}
 
-				case EXPORT:
-				case LOAD:
-					accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.UPDATE;
-				break;
-
-				case LOCKDB:
-				case LOCKTABLE:
-				case UNLOCKDB:
-				case UNLOCKTABLE:
-					accessType = HiveAccessType.LOCK;
-				break;
-
-				/*
-				 * SELECT access is done for many of these metadata operations since hive does not call back for filtering.
-				 * Overtime these should move to _any/USE access (as hive adds support for filtering).
-				 */
-				case QUERY:
-				case SHOW_TABLESTATUS:
-				case SHOW_CREATETABLE:
-				case SHOWPARTITIONS:
-				case SHOW_TBLPROPERTIES:
-				case ANALYZE_TABLE:
-					accessType = HiveAccessType.SELECT;
-				break;
-
-				case SHOWCOLUMNS:
-				case DESCTABLE:
-					switch (StringUtil.toLower(hivePlugin.DescribeShowTableAuth)){
-						case "show-allowed":
-							// This is not implemented so defaulting to current behaviour of blocking describe/show columns not to show any columns.
-							// This has to be implemented when hive provides the necessary filterListCmdObjects for
-							// SELECT/SHOWCOLUMS/DESCTABLE to filter the columns based on access provided in ranger.
-						case "none":
-						case "":
+							if (hiveObjectType == HiveObjectType.GLOBAL) {
+								accessType = HiveAccessType.TEMPUDFADMIN;
+							}
+							break;
+						case CREATEDATABASE:
+							if (hiveObj.getType() == HivePrivilegeObjectType.DATABASE) {
+								accessType = HiveAccessType.CREATE;
+							}
+							break;
+						case ALTERDATABASE:
+						case ALTERDATABASE_LOCATION:
+						case ALTERDATABASE_OWNER:
+							accessType = HiveAccessType.ALTER;
+							break;
+						case ALTERVIEW_AS:
+							if (hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW) {
+								accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.ALTER;
+							} else if (hiveObj.getType() == HivePrivilegeObjectType.DATABASE) {
+								accessType = HiveAccessType.SELECT;
+							}
+							break;
+                        case CACHE_METADATA:
+                            break;
+                        case ALTERPARTITION_BUCKETNUM:
+						case ALTERPARTITION_FILEFORMAT:
+						case ALTERPARTITION_LOCATION:
+						case ALTERPARTITION_MERGEFILES:
+						case ALTERPARTITION_PROTECTMODE:
+						case ALTERPARTITION_SERDEPROPERTIES:
+						case ALTERPARTITION_SERIALIZER:
+						case ALTERTABLE_ADDCOLS:
+						case ALTERTABLE_ADDPARTS:
+						case ALTERTABLE_ARCHIVE:
+						case ALTERTABLE_BUCKETNUM:
+						case ALTERTABLE_CLUSTER_SORT:
+						case ALTERTABLE_COMPACT:
+						case ALTERTABLE_DROPPARTS:
+						case ALTERTABLE_DROPCONSTRAINT:
+						case ALTERTABLE_ADDCONSTRAINT:
+						case ALTERTABLE_FILEFORMAT:
+						case ALTERTABLE_LOCATION:
+						case ALTERTABLE_MERGEFILES:
+						case ALTERTABLE_PARTCOLTYPE:
+						case ALTERTABLE_PROPERTIES:
+						case ALTERTABLE_PROTECTMODE:
+						case ALTERTABLE_RENAME:
+						case ALTERTABLE_RENAMECOL:
+						case ALTERTABLE_RENAMEPART:
+						case ALTERTABLE_REPLACECOLS:
+						case ALTERTABLE_SERDEPROPERTIES:
+						case ALTERTABLE_SERIALIZER:
+						case ALTERTABLE_SKEWED:
+						case ALTERTABLE_TOUCH:
+						case ALTERTABLE_UNARCHIVE:
+						case ALTERTABLE_UPDATEPARTSTATS:
+						case ALTERTABLE_UPDATETABLESTATS:
+						case ALTERTABLE_UPDATECOLUMNS:
+						case ALTERTBLPART_SKEWED_LOCATION:
+						case ALTERVIEW_PROPERTIES:
+						case ALTERVIEW_RENAME:
+						case ALTERTABLE_EXCHANGEPARTITION:
+						case ALTERTABLE_OWNER:
+						case ALTERTABLE_EXECUTE:
+						case ALTERTABLE_SETPARTSPEC:
+						case ALTER_MATERIALIZED_VIEW_REWRITE:
+							if (!isInput && this.isHiveOpTypeRenameTableOrView(hiveOpType)) {
+								if (hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW || hiveObj.getType() == HivePrivilegeObjectType.DATABASE) {
+									accessType = HiveAccessType.CREATE;
+								}
+							} else if (hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW) {
+								accessType = HiveAccessType.ALTER;
+							} else if (hiveObj.getType() == HivePrivilegeObjectType.STORAGEHANDLER_URI) {
+								accessType = HiveAccessType.RWSTORAGE;
+							}
+							break;
+						case MSCK:
+							accessType = HiveAccessType.ALTER;
+							break;
+						case DROPTABLE:
+						case DROPVIEW:
+						case DROP_MATERIALIZED_VIEW:
+							if (hiveObj.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW) {
+								accessType = HiveAccessType.DROP;
+							} else if (hiveObj.getType() == HivePrivilegeObjectType.STORAGEHANDLER_URI) {
+								accessType = HiveAccessType.RWSTORAGE;
+							}
+							break;
+						case DROPFUNCTION:
+						case DROPDATABASE:
+							accessType = HiveAccessType.DROP;
+							break;
+						case IMPORT:
+							accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.CREATE;
+							break;
+						case EXPORT:
+						case LOAD:
+							accessType = isInput ? HiveAccessType.SELECT : HiveAccessType.UPDATE;
+							break;
+						case LOCKDB:
+						case LOCKTABLE:
+						case UNLOCKDB:
+						case UNLOCKTABLE:
+							accessType = HiveAccessType.LOCK;
+							break;
+                        case SHOW_CREATEDATABASE:
+                            break;
+                        case QUERY:
+						case SHOW_TABLESTATUS:
+						case SHOW_CREATETABLE:
+						case SHOWPARTITIONS:
+						case SHOW_TBLPROPERTIES:
+						case ANALYZE_TABLE:
 							accessType = HiveAccessType.SELECT;
 							break;
-						case "show-all":
+						case SHOWCOLUMNS:
+						case DESCTABLE:
+							RangerHivePlugin var10000 = hivePlugin;
+							switch (StringUtil.toLower(RangerHivePlugin.DescribeShowTableAuth)) {
+								case "show-allowed":
+								case "none":
+								case "":
+									accessType = HiveAccessType.SELECT;
+									return accessType;
+								case "show-all":
+									accessType = HiveAccessType.USE;
+									return accessType;
+								default:
+									return accessType;
+							}
+						case SHOWDATABASES:
+						case SWITCHDATABASE:
+						case DESCDATABASE:
+						case SHOWTABLES:
+						case SHOWVIEWS:
 							accessType = HiveAccessType.USE;
 							break;
-					}
-				break;
-
-				// any access done for metadata access of actions that have support from hive for filtering
-				case SHOWDATABASES:
-				case SWITCHDATABASE:
-				case DESCDATABASE:
-				case SHOWTABLES:
-				case SHOWVIEWS:
-					accessType = HiveAccessType.USE;
-				break;
-
-				case TRUNCATETABLE:
-					accessType = HiveAccessType.UPDATE;
-				break;
-
-				case GRANT_PRIVILEGE:
-				case REVOKE_PRIVILEGE:
-					accessType = HiveAccessType.NONE; // access check will be performed at the ranger-admin side
-				break;
-
-				case REPLDUMP:
-				case REPLLOAD:
-				case REPLSTATUS:
-					accessType = HiveAccessType.REPLADMIN;
-				break;
-
-				case KILL_QUERY:
-				case CREATE_RESOURCEPLAN:
-				case SHOW_RESOURCEPLAN:
-				case ALTER_RESOURCEPLAN:
-				case DROP_RESOURCEPLAN:
-				case CREATE_TRIGGER:
-				case ALTER_TRIGGER:
-				case DROP_TRIGGER:
-				case CREATE_POOL:
-				case ALTER_POOL:
-				case DROP_POOL:
-				case CREATE_MAPPING:
-				case ALTER_MAPPING:
-				case DROP_MAPPING:
-				case LLAP_CACHE_PURGE:
-				case LLAP_CLUSTER_INFO:
-					accessType = HiveAccessType.SERVICEADMIN;
-				break;
-
-				case ADD:
-				case COMPILE:
-					accessType = HiveAccessType.TEMPUDFADMIN;
-				break;
-
-				case DELETE:
-				case CREATEMACRO:
-				case CREATEROLE:
-				case DESCFUNCTION:
-				case DFS:
-				case DROPMACRO:
-				case DROPROLE:
-				case EXPLAIN:
-				case GRANT_ROLE:
-				case REVOKE_ROLE:
-				case RESET:
-				case SET:
-				case SHOWCONF:
-				case SHOWFUNCTIONS:
-				case SHOWLOCKS:
-				case SHOW_COMPACTIONS:
-				case SHOW_GRANT:
-				case SHOW_ROLES:
-				case SHOW_ROLE_GRANT:
-				case SHOW_ROLE_PRINCIPALS:
-				case SHOW_TRANSACTIONS:
-				break;
+						case TRUNCATETABLE:
+							accessType = HiveAccessType.UPDATE;
+							break;
+						case GRANT_PRIVILEGE:
+						case REVOKE_PRIVILEGE:
+							accessType = HiveAccessType.NONE;
+							break;
+						case REPLDUMP:
+						case REPLLOAD:
+						case REPLSTATUS:
+							accessType = HiveAccessType.REPLADMIN;
+							break;
+						case KILL_QUERY:
+						case CREATE_RESOURCEPLAN:
+						case SHOW_RESOURCEPLAN:
+						case ALTER_RESOURCEPLAN:
+						case DROP_RESOURCEPLAN:
+						case CREATE_TRIGGER:
+						case ALTER_TRIGGER:
+						case DROP_TRIGGER:
+						case CREATE_POOL:
+						case ALTER_POOL:
+						case DROP_POOL:
+						case CREATE_MAPPING:
+						case ALTER_MAPPING:
+						case DROP_MAPPING:
+						case LLAP_CACHE_PURGE:
+						case LLAP_CLUSTER_INFO:
+						case CREATE_SCHEDULED_QUERY:
+						case ALTER_SCHEDULED_QUERY:
+						case DROP_SCHEDULED_QUERY:
+							accessType = HiveAccessType.SERVICEADMIN;
+							break;
+						case ADD:
+						case COMPILE:
+							accessType = HiveAccessType.TEMPUDFADMIN;
+						case DELETE:
+						case CREATEMACRO:
+						case CREATEROLE:
+						case DESCFUNCTION:
+						case DFS:
+						case DROPMACRO:
+						case DROPROLE:
+						case EXPLAIN:
+						case GRANT_ROLE:
+						case REVOKE_ROLE:
+						case RESET:
+						case SET:
+						case SHOWCONF:
+						case SHOWFUNCTIONS:
+						case SHOWLOCKS:
+						case SHOW_COMPACTIONS:
+						case SHOW_GRANT:
+						case SHOW_ROLES:
+						case SHOW_ROLE_GRANT:
+						case SHOW_ROLE_PRINCIPALS:
+						case SHOW_TRANSACTIONS:
+                        case SHOWMATERIALIZEDVIEWS:
+                            break;
+                        case RELOADFUNCTION:
+                            break;
+                        case ABORT_TRANSACTIONS:
+                            break;
+                        case START_TRANSACTION:
+                            break;
+                        case COMMIT:
+                            break;
+                        case ROLLBACK:
+                            break;
+                        case SET_AUTOCOMMIT:
+                            break;
+                        case GET_CATALOGS:
+                            break;
+                        case GET_COLUMNS:
+                            break;
+                        case GET_FUNCTIONS:
+                            break;
+                        case GET_SCHEMAS:
+                            break;
+                        case GET_TABLES:
+                            break;
+                        case GET_TABLETYPES:
+                            break;
+                        case GET_TYPEINFO:
+                            break;
+						case CREATEDATACONNECTOR:
+						case DROPDATACONNECTOR:
+						case SHOWDATACONNECTORS:
+						case ALTERDATACONNECTOR:
+						case ALTERDATACONNECTOR_OWNER:
+						case ALTERDATACONNECTOR_URL:
+						case DESCDATACONNECTOR:
+						case ALTERTABLE_CONVERT:
+						case ALTERTABLE_CREATEBRANCH:
+						case ALTERTABLE_DROPBRANCH:
+						case ALTERTABLE_CREATETAG:
+						case ALTERTABLE_DROPTAG:
+						case ALTER_MATERIALIZED_VIEW_REBUILD:
+						case PREPARE:
+						case EXECUTE:
+						case ABORT_COMPACTION:
+							break;
+                    }
 			}
-			break;
+
+			return accessType;
 		}
-		
-		return accessType;
+	}
+
+	private boolean isHiveOpTypeRenameTableOrView(HiveOperationType hiveOpType) {
+		boolean ret = false;
+		if (hiveOpType.equals(HiveOperationType.ALTERTABLE_RENAME) || hiveOpType.equals(HiveOperationType.ALTERVIEW_RENAME)) {
+			ret = true;
+		}
+
+		return ret;
 	}
 
 	private FsAction getURIAccessType(HiveOperationType hiveOpType) {
 		FsAction ret = FsAction.NONE;
-
-		switch(hiveOpType) {
-			case LOAD:
-			case IMPORT:
-				ret = FsAction.READ;
-			break;
-
-			case EXPORT:
-				ret = FsAction.WRITE;
-			break;
-
-			case CREATEDATABASE:
+		switch (hiveOpType) {
 			case CREATETABLE:
 			case CREATETABLE_AS_SELECT:
 			case CREATEFUNCTION:
-			case DROPFUNCTION:
-			case RELOADFUNCTION:
+			case CREATEDATABASE:
 			case ALTERDATABASE:
 			case ALTERDATABASE_LOCATION:
 			case ALTERDATABASE_OWNER:
-			case ALTERTABLE_ADDCOLS:
-			case ALTERTABLE_REPLACECOLS:
-			case ALTERTABLE_RENAMECOL:
-			case ALTERTABLE_RENAMEPART:
-			case ALTERTABLE_RENAME:
-			case ALTERTABLE_DROPPARTS:
-			case ALTERTABLE_ADDPARTS:
-			case ALTERTABLE_TOUCH:
-			case ALTERTABLE_ARCHIVE:
-			case ALTERTABLE_UNARCHIVE:
-			case ALTERTABLE_PROPERTIES:
-			case ALTERTABLE_SERIALIZER:
-			case ALTERTABLE_PARTCOLTYPE:
-			case ALTERTABLE_DROPCONSTRAINT:
-			case ALTERTABLE_ADDCONSTRAINT:
-			case ALTERTABLE_SERDEPROPERTIES:
-			case ALTERTABLE_CLUSTER_SORT:
-			case ALTERTABLE_BUCKETNUM:
-			case ALTERTABLE_UPDATETABLESTATS:
-			case ALTERTABLE_UPDATEPARTSTATS:
-			case ALTERTABLE_UPDATECOLUMNS:
-			case ALTERTABLE_PROTECTMODE:
-			case ALTERTABLE_FILEFORMAT:
-			case ALTERTABLE_LOCATION:
-			case ALTERTABLE_MERGEFILES:
-			case ALTERTABLE_SKEWED:
-			case ALTERTABLE_COMPACT:
-			case ALTERTABLE_EXCHANGEPARTITION:
-			case ALTERPARTITION_SERIALIZER:
-			case ALTERPARTITION_SERDEPROPERTIES:
 			case ALTERPARTITION_BUCKETNUM:
-			case ALTERPARTITION_PROTECTMODE:
 			case ALTERPARTITION_FILEFORMAT:
 			case ALTERPARTITION_LOCATION:
 			case ALTERPARTITION_MERGEFILES:
+			case ALTERPARTITION_PROTECTMODE:
+			case ALTERPARTITION_SERDEPROPERTIES:
+			case ALTERPARTITION_SERIALIZER:
+			case ALTERTABLE_ADDCOLS:
+			case ALTERTABLE_ADDPARTS:
+			case ALTERTABLE_ARCHIVE:
+			case ALTERTABLE_BUCKETNUM:
+			case ALTERTABLE_CLUSTER_SORT:
+			case ALTERTABLE_COMPACT:
+			case ALTERTABLE_DROPPARTS:
+			case ALTERTABLE_DROPCONSTRAINT:
+			case ALTERTABLE_ADDCONSTRAINT:
+			case ALTERTABLE_FILEFORMAT:
+			case ALTERTABLE_LOCATION:
+			case ALTERTABLE_MERGEFILES:
+			case ALTERTABLE_PARTCOLTYPE:
+			case ALTERTABLE_PROPERTIES:
+			case ALTERTABLE_PROTECTMODE:
+			case ALTERTABLE_RENAME:
+			case ALTERTABLE_RENAMECOL:
+			case ALTERTABLE_RENAMEPART:
+			case ALTERTABLE_REPLACECOLS:
+			case ALTERTABLE_SERDEPROPERTIES:
+			case ALTERTABLE_SERIALIZER:
+			case ALTERTABLE_SKEWED:
+			case ALTERTABLE_TOUCH:
+			case ALTERTABLE_UNARCHIVE:
+			case ALTERTABLE_UPDATEPARTSTATS:
+			case ALTERTABLE_UPDATETABLESTATS:
+			case ALTERTABLE_UPDATECOLUMNS:
 			case ALTERTBLPART_SKEWED_LOCATION:
+			case ALTERTABLE_EXCHANGEPARTITION:
 			case ALTERTABLE_OWNER:
+			case ALTERTABLE_EXECUTE:
+			case ALTERTABLE_SETPARTSPEC:
+			case DROPFUNCTION:
+			case QUERY:
 			case ADD:
 			case DELETE:
-			case QUERY:
+			case RELOADFUNCTION:
 				ret = FsAction.ALL;
-				break;
-
-			case EXPLAIN:
-			case DROPDATABASE:
-			case SWITCHDATABASE:
-			case LOCKDB:
-			case UNLOCKDB:
-			case DROPTABLE:
-			case DESCTABLE:
-			case DESCFUNCTION:
-			case MSCK:
-			case ANALYZE_TABLE:
-			case CACHE_METADATA:
-			case SHOWDATABASES:
-			case SHOWTABLES:
-			case SHOWCOLUMNS:
-			case SHOW_TABLESTATUS:
-			case SHOW_TBLPROPERTIES:
-			case SHOW_CREATEDATABASE:
-			case SHOW_CREATETABLE:
-			case SHOWFUNCTIONS:
-			case SHOWVIEWS:
-			case SHOWPARTITIONS:
-			case SHOWLOCKS:
-			case SHOWCONF:
-			case CREATEMACRO:
-			case DROPMACRO:
 			case CREATEVIEW:
-			case DROPVIEW:
 			case CREATE_MATERIALIZED_VIEW:
+			case ALTERVIEW_AS:
 			case ALTERVIEW_PROPERTIES:
-			case DROP_MATERIALIZED_VIEW:
+			case ALTERVIEW_RENAME:
 			case ALTER_MATERIALIZED_VIEW_REWRITE:
+			case MSCK:
+			case DROPTABLE:
+			case DROPVIEW:
+			case DROP_MATERIALIZED_VIEW:
+			case DROPDATABASE:
+			case LOCKDB:
 			case LOCKTABLE:
+			case UNLOCKDB:
 			case UNLOCKTABLE:
-			case CREATEROLE:
-			case DROPROLE:
+			case SHOW_TABLESTATUS:
+			case SHOW_CREATETABLE:
+			case SHOWPARTITIONS:
+			case SHOW_TBLPROPERTIES:
+			case ANALYZE_TABLE:
+			case SHOWCOLUMNS:
+			case DESCTABLE:
+			case SHOWDATABASES:
+			case SWITCHDATABASE:
+			case DESCDATABASE:
+			case SHOWTABLES:
+			case SHOWVIEWS:
+			case TRUNCATETABLE:
 			case GRANT_PRIVILEGE:
 			case REVOKE_PRIVILEGE:
-			case SHOW_GRANT:
-			case GRANT_ROLE:
-			case REVOKE_ROLE:
-			case SHOW_ROLES:
-			case SHOW_ROLE_GRANT:
-			case SHOW_ROLE_PRINCIPALS:
-			case TRUNCATETABLE:
-			case DESCDATABASE:
-			case ALTERVIEW_RENAME:
-			case ALTERVIEW_AS:
-			case SHOW_COMPACTIONS:
-			case SHOW_TRANSACTIONS:
-			case ABORT_TRANSACTIONS:
-			case SET:
-			case RESET:
-			case DFS:
-			case COMPILE:
-			case START_TRANSACTION:
-			case COMMIT:
-			case ROLLBACK:
-			case SET_AUTOCOMMIT:
-			case GET_CATALOGS:
-			case GET_COLUMNS:
-			case GET_FUNCTIONS:
-			case GET_SCHEMAS:
-			case GET_TABLES:
-			case GET_TABLETYPES:
-			case GET_TYPEINFO:
 			case REPLDUMP:
 			case REPLLOAD:
 			case REPLSTATUS:
 			case KILL_QUERY:
-			case LLAP_CACHE_PURGE:
-			case LLAP_CLUSTER_INFO:
 			case CREATE_RESOURCEPLAN:
 			case SHOW_RESOURCEPLAN:
 			case ALTER_RESOURCEPLAN:
@@ -2058,6 +2064,70 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case CREATE_MAPPING:
 			case ALTER_MAPPING:
 			case DROP_MAPPING:
+			case LLAP_CACHE_PURGE:
+			case LLAP_CLUSTER_INFO:
+			case CREATE_SCHEDULED_QUERY:
+			case ALTER_SCHEDULED_QUERY:
+			case DROP_SCHEDULED_QUERY:
+			case COMPILE:
+			case CREATEMACRO:
+			case CREATEROLE:
+			case DESCFUNCTION:
+			case DFS:
+			case DROPMACRO:
+			case DROPROLE:
+			case EXPLAIN:
+			case GRANT_ROLE:
+			case REVOKE_ROLE:
+			case RESET:
+			case SET:
+			case SHOWCONF:
+			case SHOWFUNCTIONS:
+			case SHOWLOCKS:
+			case SHOW_COMPACTIONS:
+			case SHOW_GRANT:
+			case SHOW_ROLES:
+			case SHOW_ROLE_GRANT:
+			case SHOW_ROLE_PRINCIPALS:
+			case SHOW_TRANSACTIONS:
+			case CACHE_METADATA:
+			case SHOW_CREATEDATABASE:
+			case ABORT_TRANSACTIONS:
+			case START_TRANSACTION:
+			case COMMIT:
+			case ROLLBACK:
+			case SET_AUTOCOMMIT:
+			case GET_CATALOGS:
+			case GET_COLUMNS:
+			case GET_FUNCTIONS:
+			case GET_SCHEMAS:
+			case GET_TABLES:
+			case GET_TABLETYPES:
+			case GET_TYPEINFO:
+			default:
+				break;
+			case IMPORT:
+			case LOAD:
+				ret = FsAction.READ;
+				break;
+			case EXPORT:
+				ret = FsAction.WRITE;
+			case CREATEDATACONNECTOR:
+			case DROPDATACONNECTOR:
+			case SHOWDATACONNECTORS:
+			case ALTERDATACONNECTOR:
+			case ALTERDATACONNECTOR_OWNER:
+			case ALTERDATACONNECTOR_URL:
+			case DESCDATACONNECTOR:
+			case ALTERTABLE_CONVERT:
+			case ALTERTABLE_CREATEBRANCH:
+			case ALTERTABLE_DROPBRANCH:
+			case ALTERTABLE_CREATETAG:
+			case ALTERTABLE_DROPTAG:
+			case ALTER_MATERIALIZED_VIEW_REBUILD:
+			case PREPARE:
+			case EXECUTE:
+			case ABORT_COMPACTION:
 				break;
 		}
 
@@ -3153,7 +3223,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 }
 
 enum HiveObjectType { NONE, DATABASE, TABLE, VIEW, PARTITION, COLUMN, FUNCTION, URI, SERVICE_NAME, GLOBAL };
-enum HiveAccessType { NONE, CREATE, ALTER, DROP, LOCK, SELECT, UPDATE, USE, READ, WRITE, ALL, REPLADMIN, SERVICEADMIN, TEMPUDFADMIN };
+enum HiveAccessType { NONE, CREATE, ALTER, DROP, LOCK, SELECT, UPDATE, USE, READ, WRITE, ALL, REPLADMIN, SERVICEADMIN, TEMPUDFADMIN, RWSTORAGE };
 
 class HiveObj {
 	String databaseName;
