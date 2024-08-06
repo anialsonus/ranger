@@ -95,6 +95,11 @@
             <version>${commons.codec.version}</version>
 		</dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${fasterxml.jackson.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
             <version>${curator.test.version}</version>

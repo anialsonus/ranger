@@ -39,6 +39,7 @@
                         <unpack>false</unpack>
                         <includes>
                     <include>org.apache.hadoop:hadoop-common:jar:${hadoop.version}</include>
+                    <include>org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:${hadoop-shaded-guava.version}</include>
                     <include>org.apache.hadoop:hadoop-auth:jar:${hadoop.version}</include>
                     <include>org.eclipse.persistence:eclipselink</include>
                     <include>org.eclipse.jetty:jetty-client:jar:${jetty-client.version}</include>
@@ -229,6 +230,7 @@
                     <include>org.codehaus.jackson:jackson-xc</include>
                     <include>org.codehaus.woodstox:stax2-api</include>
                     <include>com.fasterxml.woodstox:woodstox-core</include>
+                    <include>org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:${hadoop-shaded-guava.version}</include>
                 </includes>
             </binaries>
         </moduleSet>
@@ -337,6 +339,7 @@
                             <include>org.apache.ranger:credentialbuilder</include>
                             <include>org.codehaus.woodstox:stax2-api</include>
                             <include>com.fasterxml.woodstox:woodstox-core</include>
+                            <include>org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:${hadoop-shaded-guava.version}</include>
                         </includes>
                     </dependencySet>
                 </dependencySets>
@@ -384,6 +387,7 @@
                     <include>com.fasterxml.woodstox:woodstox-core</include>
                     <include>org.apache.commons:commons-compress:jar:${commons.compress.version}</include>
                     <include>org.apache.commons:commons-lang3</include>
+                    <include>org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:${hadoop-shaded-guava.version}</include>
                 </includes>
             </binaries>
         </moduleSet>

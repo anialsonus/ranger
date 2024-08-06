@@ -95,6 +95,7 @@
               <include>org.apache.lucene:lucene-core</include>
               <include>joda-time:joda-time</include>
               <include>com.carrotsearch:hppc</include>
+              <include>org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:${hadoop-shaded-guava.version}</include>
             </includes>
           </dependencySet>
           <dependencySet>
@@ -115,6 +116,7 @@
               <include>org.apache.hadoop:hadoop-auth:jar</include>
               <include>org.apache.ranger:ranger-plugins-cred</include>
               <include>org.apache.ranger:credentialbuilder</include>
+              <include>org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:${hadoop-shaded-guava.version}</include>
             </includes>
           </dependencySet>
           <dependencySet>
