@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.apache.ranger.plugin.util.PasswordUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
@@ -28,7 +29,11 @@ public class AdsccRestService {
                                          final String username,
                                          final String password) {
         try {
-            return Optional.ofNullable(JsonParser.parseString(IOUtils.toString(getResponse(url, username, password).getEntity().getContent(), StandardCharsets.UTF_8)));
+            HttpResponse response = getResponse(url, username, password);
+            InputStream responseContent = response.getEntity().getContent();
+            String responseContentString = IOUtils.toString(responseContent, StandardCharsets.UTF_8);
+            JsonElement responseContentJson = JsonParser.parseString(responseContentString);
+            return Optional.ofNullable(responseContentJson);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Optional.empty();

@@ -52,8 +52,10 @@ public class RangerServiceAdscc extends RangerBaseService {
             if (hostname.lastIndexOf("/") == hostname.length() - 1) {
                 result.put(HOST_CONFIG, "Incorrect format, remove last character /");
             } else {
-                int statusCode = AdsccEntityEnum.CLUSTER.getUrl(new HashMap<>()).map(url -> adsccRestService.getStatusCode(configs.get(HOST_CONFIG) + url,
-                        configs.get(USERNAME_CONFIG),
+                int statusCode = AdsccEntityEnum.CLUSTER.getUrl(new HashMap<>())
+                        .map(url -> adsccRestService.getStatusCode(
+                                configs.get(HOST_CONFIG) + url,
+                                configs.get(USERNAME_CONFIG),
                                 configs.get(PASSWORD_CONFIG)))
                         .orElse(404);
                 if (statusCode == 400) {
