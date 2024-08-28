@@ -18,14 +18,22 @@ FROM ranger-base:latest
 
 ARG RANGER_BUILD_JAVA_VERSION
 ARG TARGETARCH
+ARG MAVEN_VERSION
+ARG BASE_URL=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}
 
 # Install necessary packages to build Ranger
-RUN apt-get update && apt-get -y install git maven build-essential
+RUN apt-get update && apt-get -y install git build-essential
+
+RUN wget  ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz --directory=/opt/ && \
+mkdir -p /usr/share/maven && \
+tar xvfz /opt/apache-maven-*.tar.gz -C /usr/share/maven --strip-components=1 && \
+rm -f /opt/apache-maven-${MAVEN_VERSION}.tar.gz && \
+ln -sf /usr/share/maven/bin/mvn /usr/bin/mvn
 
 # Set environment variables
 ENV JAVA_HOME  /usr/lib/jvm/java-${RANGER_BUILD_JAVA_VERSION}-openjdk-${TARGETARCH}
 ENV MAVEN_HOME /usr/share/maven
-ENV PATH       /usr/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/apache-maven/bin
+ENV PATH       /usr/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/maven/bin
 
 RUN update-java-alternatives --set /usr/lib/jvm/java-1.${RANGER_BUILD_JAVA_VERSION}.0-openjdk-${TARGETARCH}
 

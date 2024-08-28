@@ -44,7 +44,7 @@ import org.apache.ranger.entity.XXRangerMasterKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+import java.util.Base64;
 
 public class RangerMasterKey implements RangerKMSMKI {
 
@@ -268,7 +268,7 @@ public class RangerMasterKey implements RangerKMSMKI {
         if (logger.isDebugEnabled()) {
             logger.debug("<== RangerMasterKey.decryptMasterKey()");
         }
-        return Base64.encode(masterKeyFromDB.getEncoded());
+        return Base64.getEncoder().encodeToString(masterKeyFromDB.getEncoded());
     }
 
     public static void getPasswordParam(String paddedEncryptedPwd) {
@@ -356,10 +356,10 @@ public class RangerMasterKey implements RangerKMSMKI {
                     String masterKeyStr = rangerMasterKey.getMasterKey();
                     if (masterKeyStr.contains(",")) {
                         getPasswordParam(masterKeyStr);
-                        ret.add(Base64.decode(password));
+                        ret.add(Base64.getDecoder().decode(password));
                         ret.add(masterKeyStr);
                     } else {
-                        ret.add(Base64.decode(masterKeyStr));
+                        ret.add(Base64.getDecoder().decode(masterKeyStr));
                     }
                     if (logger.isDebugEnabled()) {
                         logger.debug("<== RangerMasterKey.getEncryptedMK()");
@@ -426,7 +426,7 @@ public class RangerMasterKey implements RangerKMSMKI {
         if (logger.isDebugEnabled()) {
             logger.debug("<== RangerMasterKey.encryptMasterKey()");
         }
-        return Base64.encode(masterKeyToDB);
+        return Base64.getEncoder().encodeToString(masterKeyToDB);
     }
 
     private String encryptMasterKey(String password, byte[] secretKey) throws Throwable {
@@ -438,7 +438,7 @@ public class RangerMasterKey implements RangerKMSMKI {
         if (logger.isDebugEnabled()) {
             logger.debug("<== RangerMasterKey.encryptMasterKey()");
         }
-        return Base64.encode(masterKeyToDB);
+        return Base64.getEncoder().encodeToString(masterKeyToDB);
     }
 
     private Key generateMasterKey() throws NoSuchAlgorithmException {
