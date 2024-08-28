@@ -1600,9 +1600,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			break;
 
 			case PARTITION:
-			case INDEX:
-				ret = new RangerHiveResource(objectType, hiveObj.getDbname(), hiveObj.getObjectName());
-			break;
 	
 			case COLUMN:
 				ret = new RangerHiveResource(objectType, hiveObj.getDbname(), hiveObj.getObjectName(), StringUtils.join(hiveObj.getColumns(), COLUMN_SEP));
@@ -1685,9 +1682,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			break;
 
 			case TABLE_OR_VIEW:
-				if(hiveOpTypeName.contains("index")) {
-					objType = HiveObjectType.INDEX;
-				} else if(! StringUtil.isEmpty(hiveObj.getColumns())) {
+				if(! StringUtil.isEmpty(hiveObj.getColumns())) {
 					objType = HiveObjectType.COLUMN;
 				} else if(hiveOpTypeName.contains("view")) {
 					objType = HiveObjectType.VIEW;
@@ -1784,8 +1779,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 				case ALTERDATABASE:
 				case ALTERDATABASE_LOCATION:
 				case ALTERDATABASE_OWNER:
-				case ALTERINDEX_PROPS:
-				case ALTERINDEX_REBUILD:
 				case ALTERPARTITION_BUCKETNUM:
 				case ALTERPARTITION_FILEFORMAT:
 				case ALTERPARTITION_LOCATION:
@@ -1824,22 +1817,16 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 				case ALTERVIEW_PROPERTIES:
 				case ALTERVIEW_RENAME:
 				case ALTER_MATERIALIZED_VIEW_REWRITE:
-				case DROPVIEW_PROPERTIES:
 				case MSCK:
 					accessType = HiveAccessType.ALTER;
 				break;
 
 				case DROPFUNCTION:
-				case DROPINDEX:
 				case DROPTABLE:
 				case DROPVIEW:
 				case DROP_MATERIALIZED_VIEW:
 				case DROPDATABASE:
 					accessType = HiveAccessType.DROP;
-				break;
-
-				case CREATEINDEX:
-					accessType = HiveAccessType.INDEX;
 				break;
 
 				case IMPORT:
@@ -1874,7 +1861,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 				case QUERY:
 				case SHOW_TABLESTATUS:
 				case SHOW_CREATETABLE:
-				case SHOWINDEXES:
 				case SHOWPARTITIONS:
 				case SHOW_TBLPROPERTIES:
 				case ANALYZE_TABLE:
@@ -2021,7 +2007,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case ALTERTABLE_PROTECTMODE:
 			case ALTERTABLE_FILEFORMAT:
 			case ALTERTABLE_LOCATION:
-			case ALTERINDEX_PROPS:
 			case ALTERTABLE_MERGEFILES:
 			case ALTERTABLE_SKEWED:
 			case ALTERTABLE_COMPACT:
@@ -2061,7 +2046,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case SHOW_CREATETABLE:
 			case SHOWFUNCTIONS:
 			case SHOWVIEWS:
-			case SHOWINDEXES:
 			case SHOWPARTITIONS:
 			case SHOWLOCKS:
 			case SHOWCONF:
@@ -2070,11 +2054,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			case CREATEVIEW:
 			case DROPVIEW:
 			case CREATE_MATERIALIZED_VIEW:
-			case CREATEINDEX:
-			case DROPINDEX:
-			case ALTERINDEX_REBUILD:
 			case ALTERVIEW_PROPERTIES:
-			case DROPVIEW_PROPERTIES:
 			case DROP_MATERIALIZED_VIEW:
 			case ALTER_MATERIALIZED_VIEW_REWRITE:
 			case LOCKTABLE:
@@ -2397,7 +2377,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.ALTER.name()) ||
 			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.CREATE.name()) ||
 			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.DROP.name()) ||
-			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.INDEX.name()) ||
 			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.LOCK.name()) ||
 			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.SELECT.name()) ||
 			   StringUtils.equalsIgnoreCase(privName, HiveAccessType.UPDATE.name())) {
@@ -3290,8 +3269,8 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 	}
 }
 
-enum HiveObjectType { NONE, DATABASE, TABLE, VIEW, PARTITION, INDEX, COLUMN, FUNCTION, URI, SERVICE_NAME, GLOBAL };
-enum HiveAccessType { NONE, CREATE, ALTER, DROP, INDEX, LOCK, SELECT, UPDATE, USE, READ, WRITE, ALL, REPLADMIN, SERVICEADMIN, TEMPUDFADMIN };
+enum HiveObjectType { NONE, DATABASE, TABLE, VIEW, PARTITION, COLUMN, FUNCTION, URI, SERVICE_NAME, GLOBAL };
+enum HiveAccessType { NONE, CREATE, ALTER, DROP, LOCK, SELECT, UPDATE, USE, READ, WRITE, ALL, REPLADMIN, SERVICEADMIN, TEMPUDFADMIN };
 
 class HiveObj {
 	String databaseName;
