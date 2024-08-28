@@ -20,16 +20,13 @@
 
 package org.apache.ranger.authorization.nestedstructure.authorizer;
 
+import jdk.nashorn.api.scripting.ClassFilter;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 /**
  * Executes an injected javascript command to determine if the user has access to the selected record
@@ -55,19 +52,21 @@ public class RecordFilterJavaScript {
      * Helps keep javascript clean of injections.  It also contains other checks to ensure that injected
      * javascript is reasonably safe.
      */
-    static class SecurityFilter {
+    static class SecurityFilter implements ClassFilter {
+        @Override
+        public boolean exposeToScripts(String s) {
+            return false;
+        }
 
         /**
-        *
-        * @param filterExpr the javascript to check if it contains potentially harmful
-        *                   commands
-        * @return if this script is likely bad
-        */
-        boolean containsMalware(String filterExpr) {
-            // this.engine is the javascript notation for getting access to runtime that is
-            // executing the script
-            // more checks can be added here
-                return filterExpr.contains("this.engine");
+         *
+          * @param filterExpr the javascript to check if it contains potentially harmful commands
+         * @return if this script is likely bad
+         */
+        boolean containsMalware(String filterExpr){
+            //this.engine is the javascript notation for getting access to runtime that is executing the script
+            //more checks can be added here
+            return filterExpr.contains("this.engine");
         }
     }
 
@@ -79,25 +78,8 @@ public class RecordFilterJavaScript {
             throw new MaskingException("cannot process filter expression due to security concern \"this.engine\": " + filterExpr);
         }
 
-        ClassLoader clsLoader = Thread.currentThread().getContextClassLoader();
-        ScriptEngineManager mgr = new ScriptEngineManager(clsLoader);
-        ScriptEngine engine = mgr.getEngineByName("graal.js");
-
-        if (engine != null) {
-            try {
-                Map<String, Boolean> graalVmConfigs = new HashMap<>();
-
-                graalVmConfigs.put("polyglot.js.allowHostAccess", Boolean.TRUE); // default is true for backward(Nashorn) compatibility
-                graalVmConfigs.put("polyglot.js.nashorn-compat", Boolean.TRUE); // default is true for backward(Nashorn) compatibility
-
-                // enable configured script features
-                Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-                bindings.putAll(graalVmConfigs);
-                engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-            } catch (Throwable t) {
-                logger.debug("RecordFilterJavaScript.filterRow(): failed to create engine type {}", "graal.js", t);
-            }
-        }
+        NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+        ScriptEngine               engine  = factory.getScriptEngine(securityFilter);
 
         if (logger.isDebugEnabled()) {
             logger.debug("filterExpr: " + filterExpr);

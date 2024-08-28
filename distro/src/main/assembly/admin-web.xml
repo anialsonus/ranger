@@ -613,7 +613,6 @@
       </excludes>
       <includes>
         <include>swagger.json</include>
-        <include>openapi.json</include>
       </includes>
       <fileMode>544</fileMode>
     </fileSet>

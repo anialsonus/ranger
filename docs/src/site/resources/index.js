@@ -21,7 +21,7 @@ var apiBaseUrl = "/service";
 
 window.onload = function() {
     const ui = SwaggerUIBundle({
-        url: getSwaggerBaseUrl(window.location.pathname),
+        url: getSwaggerBaseUrl(window.location.pathname) + "/swagger.json",
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
@@ -33,7 +33,7 @@ window.onload = function() {
         ],
         layout: "StandaloneLayout",
         requestInterceptor: function(request) {
-              if (!request.url.includes("swagger.json") && !request.url.includes("openapi.json")) {
+              if (!request.url.includes("swagger.json")) {
                     request.url = getAPIUrl(request.url);
               }
               if (request.method != "GET") {
@@ -64,27 +64,11 @@ function getSwaggerBaseUrl(url) {
     splitPath.pop();
     gatewayUrl = splitPath.join("/");
 
-    var isDocFileExists = fileExists(window.location.origin + path + "/swagger.json");
-    if (isDocFileExists) {
-        return window.location.origin + path + "/swagger.json";
-    } else {
-        return window.location.origin + path + "/openapi.json";
-    }
+    return window.location.origin + path;
 };
 
 function getAPIUrl(url) {
     url = new URL(url);
     var path =  url.origin + apiBaseUrl + url.pathname + url.search;
     return path;
-};
-
-function fileExists(url) {
-    if (url) {
-        var req = new XMLHttpRequest();
-        req.open('GET', url, false);
-        req.send();
-        return req.status == 200;
-    } else {
-        return false;
-    }
 };

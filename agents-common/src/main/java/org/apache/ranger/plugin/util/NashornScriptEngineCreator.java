@@ -23,14 +23,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import jdk.nashorn.api.scripting.ClassFilter;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
+public class NashornScriptEngineCreator implements ScriptEngineCreator {
+    private static final Logger LOG = LoggerFactory.getLogger(NashornScriptEngineCreator.class);
 
-public class JavaScriptEngineCreator implements ScriptEngineCreator {
-    private static final Logger LOG = LoggerFactory.getLogger(JavaScriptEngineCreator.class);
+    private static final String[] SCRIPT_ENGINE_ARGS = new String[] { "--no-java", "--no-syntax-extensions" };
+    private static final String   ENGINE_NAME        = "NashornScriptEngine";
 
-    static final String ENGINE_NAME = "JavaScript";
-
+    @Override
     public ScriptEngine getScriptEngine(ClassLoader clsLoader) {
         ScriptEngine ret = null;
 
@@ -39,17 +41,27 @@ public class JavaScriptEngineCreator implements ScriptEngineCreator {
         }
 
         try {
-            ScriptEngineManager mgr = new ScriptEngineManager(clsLoader);
+            NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
-            ret = mgr.getEngineByName(ENGINE_NAME);
+            ret = factory.getScriptEngine(SCRIPT_ENGINE_ARGS, clsLoader, RangerClassFilter.INSTANCE);
         } catch (Throwable t) {
-            LOG.debug("JavaScriptEngineCreator.getScriptEngine(): failed to create engine type {}", ENGINE_NAME, t);
-        }
-
-        if (ret == null) {
-            LOG.debug("JavaScriptEngineCreator.getScriptEngine(): failed to create engine type {}", ENGINE_NAME);
+            LOG.debug("NashornScriptEngineCreator.getScriptEngine(): failed to create engine type {}", ENGINE_NAME, t);
         }
 
         return ret;
+    }
+
+    private static class RangerClassFilter implements ClassFilter {
+        static final RangerClassFilter INSTANCE = new RangerClassFilter();
+
+        private RangerClassFilter() {
+        }
+
+        @Override
+        public boolean exposeToScripts(String className) {
+            LOG.warn("script blocked: attempt to use Java class {}", className);
+
+            return false;
+        }
     }
 }

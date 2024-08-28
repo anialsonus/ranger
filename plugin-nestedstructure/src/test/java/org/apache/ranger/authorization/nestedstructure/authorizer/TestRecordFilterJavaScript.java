@@ -44,8 +44,9 @@ public class TestRecordFilterJavaScript {
 
         } catch (MaskingException e) {
             Assert.assertTrue(e.getCause() instanceof RuntimeException);
+            Assert.assertTrue(e.getCause().getCause() instanceof ClassNotFoundException);
         }
-        Assert.assertTrue(Files.exists(Paths.get("omg.txt")));
+        Assert.assertFalse(Files.exists(Paths.get("omg.txt")));
     }
 
     @AfterTest

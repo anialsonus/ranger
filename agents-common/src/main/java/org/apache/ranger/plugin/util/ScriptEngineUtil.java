@@ -95,7 +95,8 @@ public class ScriptEngineUtil {
     }
 
     private static void initScriptEngineCreator(String serviceType) {
-        String[] engineCreators = new String[] { "org.apache.ranger.plugin.util.GraalScriptEngineCreator",
+        String[] engineCreators = new String[] { "org.apache.ranger.plugin.util.NashornScriptEngineCreator",
+                                                 "org.apache.ranger.plugin.util.GraalScriptEngineCreator",
                                                  "org.apache.ranger.plugin.util.JavaScriptEngineCreator"
                                                };
 
