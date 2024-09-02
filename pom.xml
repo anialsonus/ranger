@@ -293,6 +293,8 @@
                 <module>plugin-nifi-registry</module>
                 <module>plugin-presto</module>
                 <module>plugin-kudu</module>
+                <module>plugin-adscc</module>
+                <module>plugin-ssm</module>
                 <module>ugsync-util</module>
                 <module>ugsync</module>
                 <module>ugsync/ldapconfigchecktool/ldapconfigcheck</module>
@@ -618,6 +620,8 @@
                 <module>plugin-nifi</module>
                 <module>plugin-nifi-registry</module>
                 <module>plugin-kudu</module>
+                <module>plugin-adscc</module>
+                <module>plugin-ssm</module>
                 <module>ugsync-util</module>
                 <module>ugsync</module>
                 <module>ugsync/ldapconfigchecktool/ldapconfigcheck</module>
@@ -706,6 +710,8 @@
                 <module>plugin-nifi</module>
                 <module>plugin-nifi-registry</module>
                 <module>plugin-presto</module>
+                <module>plugin-adscc</module>
+                <module>plugin-ssm</module>
                 <module>ugsync-util</module>
                 <module>ugsync</module>
                 <module>ugsync/ldapconfigchecktool/ldapconfigcheck</module>
