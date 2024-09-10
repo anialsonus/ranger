@@ -562,18 +562,6 @@ public class MiscUtil {
 		}
 	}
 
-	/**
-	 * Execute the {@link PrivilegedAction} on the {@link UserGroupInformation} if it's set, otherwise call it directly.
-	 */
-	public static <X> X executePrivilegedAction(final PrivilegedAction<X> action) {
-		final UserGroupInformation ugi = getUGILoginUser();
-		if (ugi != null) {
-			return ugi.doAs(action);
-		} else {
-			return action.run();
-		}
-	}
-
 	public static Subject getSubjectLoginUser() {
 		return subjectLoginUser;
 	}
