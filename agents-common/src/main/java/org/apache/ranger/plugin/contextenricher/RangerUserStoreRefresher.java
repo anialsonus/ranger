@@ -41,7 +41,7 @@ import java.io.Writer;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.nio.channels.ClosedByInterruptException;
-import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -378,7 +378,7 @@ public class RangerUserStoreRefresher extends Thread {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Checking UserStore updated as user : " + user);
             }
-            PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+            PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
                 public ClientResponse run() {
                     ClientResponse clientRes = null;
                     String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USERSTORE;

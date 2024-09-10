@@ -20,7 +20,7 @@
 package org.apache.ranger.tagsync.sink.tagadmin;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -156,7 +156,7 @@ public class TagAdminRESTSink implements TagSink, Runnable {
 							LOG.debug("Using Principal = " + userGroupInformation.getUserName());
 						}
 						final ServiceTags serviceTag = serviceTags;
-						ServiceTags ret = userGroupInformation.doAs(new PrivilegedAction<ServiceTags>() {
+						ServiceTags ret = userGroupInformation.doAs(new PrivilegedExceptionAction<ServiceTags>() {
 							@Override
 							public ServiceTags run() {
 								try {

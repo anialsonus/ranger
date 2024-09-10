@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +172,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.SERVICE_NAME_PARAM, serviceNameUrlParam);
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientRes = null;
 					try {
@@ -229,7 +229,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_DROP_ROLE + roleName;
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientRes = null;
 					try {
@@ -279,7 +279,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_USER_ROLES + execUser;
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientRes = null;
 					try {
@@ -338,7 +338,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_EXEC_USER, execUser);
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientRes = null;
 					try {
@@ -396,7 +396,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_EXEC_USER, execUser);
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientResp = null;
 					try {
@@ -450,7 +450,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GRANT_ROLE + serviceNameUrlParam;
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientResp = null;
 					try {
@@ -498,7 +498,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_REVOKE_ROLE + serviceNameUrlParam;
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientResp = null;
 					try {
@@ -548,7 +548,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					String relativeURL = RangerRESTUtils.REST_URL_SECURE_SERVICE_GRANT_ACCESS + serviceNameUrlParam;
 					ClientResponse clientResp = null;
@@ -600,7 +600,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					String relativeURL = RangerRESTUtils.REST_URL_SECURE_SERVICE_REVOKE_ACCESS + serviceNameUrlParam;
 					ClientResponse clientResp = null;
@@ -694,7 +694,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 
 		ClientResponse response = null;
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientResp = null;
 					try {
@@ -750,7 +750,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking UserStore updated as user : " + user);
 			}
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientRes = null;
 					String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USERSTORE + serviceNameUrlParam;
@@ -933,7 +933,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Service policy if updated as user : " + user);
 			}
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					String relativeURL = RangerRESTUtils.REST_URL_POLICY_GET_FOR_SECURE_SERVICE_IF_UPDATED + serviceNameUrlParam;
 					ClientResponse clientResp = null;
@@ -1115,7 +1115,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_CAPABILITIES, pluginCapabilities);
 
 		if (isSecureMode) {
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					String relativeURL = RangerRESTUtils.REST_URL_GET_SECURE_SERVICE_TAGS_IF_UPDATED + serviceNameUrlParam;
 					ClientResponse clientResp = null;
@@ -1300,7 +1300,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Roles updated as user : " + user);
 			}
-			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+			PrivilegedExceptionAction<ClientResponse> action = new PrivilegedExceptionAction<ClientResponse>() {
 				public ClientResponse run() {
 					ClientResponse clientRes = null;
 					String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USER_GROUP_ROLES + serviceNameUrlParam;

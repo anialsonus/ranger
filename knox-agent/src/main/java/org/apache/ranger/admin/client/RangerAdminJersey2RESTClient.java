@@ -23,7 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -305,7 +305,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 				LOG.debug("Checking UserStore updated as user: {}", user);
 			}
 
-			PrivilegedAction<Response> action = () -> {
+			PrivilegedExceptionAction<Response> action = () -> {
 				Response resp        = null;
 				String   relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USERSTORE + _serviceNameUrlParam;
 
@@ -688,7 +688,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Service policy if updated as user : " + user);
 			}
-			PrivilegedAction<Response> action = new PrivilegedAction<Response>() {
+			PrivilegedExceptionAction<Response> action = new PrivilegedExceptionAction<Response>() {
 				public Response run() {
 					return get(queryParams, relativeURL, policyDownloadSessionId);
 				}
@@ -903,7 +903,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Service tags if updated as user : " + user);
 			}
-			PrivilegedAction<Response> action = new PrivilegedAction<Response>() {
+			PrivilegedExceptionAction<Response> action = new PrivilegedExceptionAction<Response>() {
 				public Response run() {
 					return get(queryParams, relativeURL, tagDownloadSessionId);
 				}
@@ -1115,7 +1115,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Roles if updated as user : " + user);
 			}
-			PrivilegedAction<Response> action = new PrivilegedAction<Response>() {
+			PrivilegedExceptionAction<Response> action = new PrivilegedExceptionAction<Response>() {
 				public Response run() {
 					return get(queryParams, relativeURL, roleDownloadSessionId);
 				}
